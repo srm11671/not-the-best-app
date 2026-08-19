@@ -4,14 +4,14 @@ import { LogoMark } from "@/components/logo-mark"
 export function Masthead() {
   return (
     <header className="border-b-2 border-[--ink] pb-4 mb-8">
-      <div className="flex items-center justify-between">
-        <Link href="/" className="group flex items-center gap-3">
-          <LogoMark size={52} />
-          <h1 className="font-display text-4xl md:text-5xl font-black tracking-tight">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <Link href="/" className="group flex items-center gap-3 min-w-0">
+          <LogoMark size={44} />
+          <h1 className="font-display text-2xl sm:text-3xl md:text-5xl font-black tracking-tight leading-none truncate">
             NOT THE BEST<span className="align-super text-lg">®</span>
           </h1>
         </Link>
-        <nav className="flex items-center gap-6 text-sm stamp">
+        <nav className="flex flex-wrap items-center gap-3 sm:gap-6 text-sm stamp">
           <Link href="/" className="hover:text-[--rust] transition-colors">
             Timeline
           </Link>
