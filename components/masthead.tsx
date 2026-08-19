@@ -1,10 +1,12 @@
 import Link from "next/link"
+import { LogoMark } from "@/components/logo-mark"
 
 export function Masthead() {
   return (
     <header className="border-b-2 border-[--ink] pb-4 mb-8">
       <div className="flex items-center justify-between">
-        <Link href="/" className="group">
+        <Link href="/" className="group flex items-center gap-3">
+          <LogoMark size={52} />
           <h1 className="font-display text-4xl md:text-5xl font-black tracking-tight">
             NOT THE BEST<span className="align-super text-lg">®</span>
           </h1>
@@ -18,7 +20,8 @@ export function Masthead() {
           </Link>
           <Link
             href="/visit/new"
-            className="rounded-full bg-[--ink] text-[--paper] px-4 py-2 hover:bg-[--rust] transition-colors normal-case font-semibold not-italic"
+            className="rounded-full text-[--paper] px-4 py-2 hover:opacity-90 transition-opacity normal-case font-semibold not-italic"
+            style={{ backgroundColor: "var(--ink)" }}
           >
             + Log a Visit
           </Link>

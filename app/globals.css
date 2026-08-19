@@ -3,13 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --paper: #f3ecdf;
-  --paper-dark: #ece3d2;
-  --ink: #241f1c;
+  --paper: #fdf8f0;
+  --paper-dark: #ffffff;
+  --ink: #17140f;
   --ink-soft: #4a4038;
-  --rust: #8b3a3a;
-  --gold: #c08a2e;
-  --line: #d8cbb0;
+  --rust: #7a1f2b;
+  --gold: #c9982e;
+  --teal: #0f6b5c;
+  --purple: #7a1f2b;
+  --line: #e8dcc0;
 }
 
 * {
@@ -20,13 +22,14 @@ body {
   background-color: var(--paper);
   color: var(--ink);
   background-image:
-    radial-gradient(circle at 1px 1px, rgba(36, 31, 28, 0.06) 1px, transparent 0);
-  background-size: 22px 22px;
+    radial-gradient(circle at 1px 1px, rgba(201, 152, 46, 0.12) 1.5px, transparent 0);
+  background-size: 24px 24px;
 }
 
 .paper-card {
   background-color: var(--paper-dark);
-  box-shadow: 0 1px 0 rgba(36, 31, 28, 0.08), 0 12px 24px -18px rgba(36, 31, 28, 0.4);
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 0 rgba(23, 20, 15, 0.06), 0 12px 24px -18px rgba(23, 20, 15, 0.35);
 }
 
 .torn-edge {
@@ -38,7 +41,7 @@ body {
     to bottom,
     transparent,
     transparent 34px,
-    rgba(36, 31, 28, 0.08) 35px
+    rgba(201, 152, 46, 0.08) 35px
   );
 }
 
@@ -58,4 +61,9 @@ body {
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background: var(--line);
   border-radius: 999px;
+}
+
+.logo-mark {
+  border: 2px solid var(--gold);
+  box-shadow: 0 2px 6px rgba(23, 20, 15, 0.25);
 }
