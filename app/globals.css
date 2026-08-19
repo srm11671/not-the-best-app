@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: #f3ecdf;
+  --paper-dark: #ece3d2;
+  --ink: #241f1c;
+  --ink-soft: #4a4038;
+  --rust: #8b3a3a;
+  --gold: #c08a2e;
+  --line: #d8cbb0;
+}
+
+* {
+  border-color: var(--line);
+}
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(36, 31, 28, 0.06) 1px, transparent 0);
+  background-size: 22px 22px;
+}
+
+.paper-card {
+  background-color: var(--paper-dark);
+  box-shadow: 0 1px 0 rgba(36, 31, 28, 0.08), 0 12px 24px -18px rgba(36, 31, 28, 0.4);
+}
+
+.torn-edge {
+  position: relative;
+}
+
+.ruled {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 34px,
+    rgba(36, 31, 28, 0.08) 35px
+  );
+}
+
+.stamp {
+  font-variant: small-caps;
+  letter-spacing: 0.14em;
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--paper);
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+}
