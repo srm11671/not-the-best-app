@@ -6,8 +6,10 @@ import Link from "next/link"
 import { ArrowLeft, MapPin, Calendar, Users, Clock, DollarSign } from "lucide-react"
 import { format, parseISO } from "date-fns"
 
-export default function VisitDetailPage({ params }: { params: { id: string } }) {
-  const visit = getVisit(params.id)
+export const dynamic = "force-dynamic"
+
+export default async function VisitDetailPage({ params }: { params: { id: string } }) {
+  const visit = await getVisit(params.id)
   if (!visit) notFound()
 
   const stats: { label: string; value: number }[] = [

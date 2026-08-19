@@ -1,6 +1,8 @@
 import { Masthead } from "@/components/masthead"
 import { NTB_TIERS } from "@/types"
 
+export const dynamic = "force-dynamic"
+
 export default function RatingPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">

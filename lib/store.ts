@@ -1,85 +1,110 @@
+import { supabase } from "@/lib/supabase"
 import { DiningVisit } from "@/types"
 
-let visits: DiningVisit[] = [
-  {
-    id: "chucks-seafood-1",
-    restaurant: "Chuck's Seafood",
-    location: "Waterfront District",
-    date: "2026-07-12",
-    occasion: "Casual dinner with friends",
-    companions: ["Jamie", "Priya"],
-    overallRating: "its-fine",
-    summary:
-      "The visit was enjoyable overall, but several service issues and inconsistencies prevented it from being a higher-rated experience. While there were standout menu items that would absolutely be ordered again, other aspects created enough friction that the experience wasn't seamless.",
-    serviceNotes: [
-      "Repeatedly needed to get the bartender's attention.",
-      "Appetizers arrived before plates, silverware, and napkins.",
-      "Several menu items required asking for current market prices rather than displaying them on the menu.",
-    ],
-    foodItems: [
-      {
-        id: "f1",
-        name: "Raw Oysters",
-        rating: "hidden-gem",
-        note: "Fresh, perfectly shucked, about $3 each, and would definitely be ordered again.",
-        wouldOrderAgain: true,
-      },
-      {
-        id: "f2",
-        name: "Tuna Poke",
-        rating: "solid-choice",
-        note: "Excellent flavor but wasn't served quite cold enough. Would order again.",
-        wouldOrderAgain: true,
-      },
-      {
-        id: "f3",
-        name: "Grouper Fingers",
-        rating: "its-fine",
-        note: "Fried nicely with creamy tartar sauce, but the fish lacked flavor and required salt, pepper, and lemon.",
-        wouldOrderAgain: false,
-      },
-    ],
-    itemsConsidered: [
-      {
-        id: "c1",
-        name: "Prime Rib (10oz)",
-        reason:
-          "Premium prices are acceptable for an outstanding steak, but there wasn't enough confidence it would justify the cost, so it was not ordered.",
-      },
-    ],
-    itemsPassedOn: [],
-    wantToTryNextTime: ["Prime Rib, if a trusted review comes in first"],
-    totalSpent: 138,
-    pricePerPerson: 46,
-    waitTimeMinutes: 15,
-    atmosphere: 7,
-    cleanliness: 8,
-    overallValue: 6,
-    privateNotes:
-      "Sit at the raw bar next time — closer to the shucking station and faster service.",
-    photos: 4,
-  },
-]
-
-export function getVisits(): DiningVisit[] {
-  return [...visits].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  )
+interface VisitRow {
+  id: string
+  restaurant: string
+  location: string
+  date: string
+  occasion: string
+  companions: string[]
+  overall_rating: string
+  summary: string
+  service_notes: string[]
+  food_items: DiningVisit["foodItems"]
+  items_considered: DiningVisit["itemsConsidered"]
+  items_passed_on: DiningVisit["itemsPassedOn"]
+  want_to_try_next_time: string[]
+  total_spent: number
+  price_per_person: number
+  wait_time_minutes: number
+  atmosphere: number
+  cleanliness: number
+  overall_value: number
+  private_notes: string
+  photos: number
 }
 
-export function getVisit(id: string): DiningVisit | undefined {
-  return visits.find((v) => v.id === id)
+function rowToVisit(row: VisitRow): DiningVisit {
+  return {
+    id: row.id,
+    restaurant: row.restaurant,
+    location: row.location,
+    date: row.date,
+    occasion: row.occasion,
+    companions: row.companions ?? [],
+    overallRating: row.overall_rating as DiningVisit["overallRating"],
+    summary: row.summary,
+    serviceNotes: row.service_notes ?? [],
+    foodItems: row.food_items ?? [],
+    itemsConsidered: row.items_considered ?? [],
+    itemsPassedOn: row.items_passed_on ?? [],
+    wantToTryNextTime: row.want_to_try_next_time ?? [],
+    totalSpent: Number(row.total_spent) || 0,
+    pricePerPerson: Number(row.price_per_person) || 0,
+    waitTimeMinutes: Number(row.wait_time_minutes) || 0,
+    atmosphere: Number(row.atmosphere) || 0,
+    cleanliness: Number(row.cleanliness) || 0,
+    overallValue: Number(row.overall_value) || 0,
+    privateNotes: row.private_notes,
+    photos: Number(row.photos) || 0,
+  }
 }
 
-export function addVisit(visit: Omit<DiningVisit, "id">): DiningVisit {
-  const newVisit: DiningVisit = { ...visit, id: crypto.randomUUID() }
-  visits.push(newVisit)
-  return newVisit
+export async function getVisits(): Promise<DiningVisit[]> {
+  const { data, error } = await supabase
+    .from("visits")
+    .select("*")
+    .order("date", { ascending: false })
+  if (error) throw new Error(error.message)
+  return (data as VisitRow[]).map(rowToVisit)
 }
 
-export function deleteVisit(id: string): boolean {
-  const index = visits.findIndex((v) => v.id === id)
-  if (index === -1) return false
-  visits.splice(index, 1)
+export async function getVisit(id: string): Promise<DiningVisit | undefined> {
+  const { data, error } = await supabase
+    .from("visits")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle()
+  if (error) throw new Error(error.message)
+  return data ? rowToVisit(data as VisitRow) : undefined
+}
+
+export async function addVisit(visit: Omit<DiningVisit, "id">): Promise<DiningVisit> {
+  const id = crypto.randomUUID()
+  const { data, error } = await supabase
+    .from("visits")
+    .insert({
+      id,
+      restaurant: visit.restaurant,
+      location: visit.location,
+      date: visit.date,
+      occasion: visit.occasion,
+      companions: visit.companions,
+      overall_rating: visit.overallRating,
+      summary: visit.summary,
+      service_notes: visit.serviceNotes,
+      food_items: visit.foodItems,
+      items_considered: visit.itemsConsidered,
+      items_passed_on: visit.itemsPassedOn,
+      want_to_try_next_time: visit.wantToTryNextTime,
+      total_spent: visit.totalSpent,
+      price_per_person: visit.pricePerPerson,
+      wait_time_minutes: visit.waitTimeMinutes,
+      atmosphere: visit.atmosphere,
+      cleanliness: visit.cleanliness,
+      overall_value: visit.overallValue,
+      private_notes: visit.privateNotes,
+      photos: visit.photos,
+    })
+    .select("*")
+    .single()
+  if (error) throw new Error(error.message)
+  return rowToVisit(data as VisitRow)
+}
+
+export async function deleteVisit(id: string): Promise<boolean> {
+  const { error } = await supabase.from("visits").delete().eq("id", id)
+  if (error) throw new Error(error.message)
   return true
 }

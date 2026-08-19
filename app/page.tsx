@@ -4,11 +4,12 @@ import { VisitCard } from "@/components/visit-card"
 import { NTB_TIERS } from "@/types"
 import Link from "next/link"
 
-export default function HomePage() {
-  const visits = getVisits()
+export const dynamic = "force-dynamic"
+
+export default async function HomePage() {
+  const visits = await getVisits()
 
   const hiddenGems = visits.filter((v) => v.overallRating === "hidden-gem").length
-  const totalSpent = visits.reduce((sum, v) => sum + v.totalSpent, 0)
   const totalRestaurants = new Set(visits.map((v) => v.restaurant)).size
 
   return (
