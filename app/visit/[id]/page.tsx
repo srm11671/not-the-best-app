@@ -3,10 +3,12 @@ import { Masthead } from "@/components/masthead"
 import { NTBBadge } from "@/components/ntb-badge"
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, MapPin, Calendar, Users, Clock, DollarSign } from "lucide-react"
+import { ArrowLeft, MapPin, Calendar, Users, Clock, DollarSign, Pencil } from "lucide-react"
 import { format, parseISO } from "date-fns"
 
 export const dynamic = "force-dynamic"
+export const revalidate = 0
+export const fetchCache = "force-no-store"
 
 export default async function VisitDetailPage({ params }: { params: { id: string } }) {
   const visit = await getVisit(params.id)
@@ -22,9 +24,18 @@ export default async function VisitDetailPage({ params }: { params: { id: string
     <div className="mx-auto max-w-4xl px-6 py-10">
       <Masthead />
 
-      <Link href="/" className="mb-6 inline-flex items-center gap-1 text-sm hover:text-[--rust]">
-        <ArrowLeft className="h-4 w-4" /> Back to timeline
-      </Link>
+      <div className="mb-6 flex items-center justify-between">
+        <Link href="/" className="inline-flex items-center gap-1 text-sm hover:text-[--rust]">
+          <ArrowLeft className="h-4 w-4" /> Back to timeline
+        </Link>
+        <Link
+          href={`/visit/${visit.id}/edit`}
+          className="inline-flex items-center gap-1 text-sm rounded-full border px-3 py-1.5 hover:text-[--rust] hover:border-[--rust] transition-colors"
+          style={{ borderColor: "var(--line)" }}
+        >
+          <Pencil className="h-3.5 w-3.5" /> Edit
+        </Link>
+      </div>
 
       <article className="paper-card rounded-md p-8 ruled">
         <div className="flex flex-wrap items-start justify-between gap-4">

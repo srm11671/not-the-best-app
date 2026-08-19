@@ -51,6 +51,31 @@ function rowToVisit(row: VisitRow): DiningVisit {
   }
 }
 
+function visitToRow(visit: Omit<DiningVisit, "id">) {
+  return {
+    restaurant: visit.restaurant,
+    location: visit.location,
+    date: visit.date,
+    occasion: visit.occasion,
+    companions: visit.companions,
+    overall_rating: visit.overallRating,
+    summary: visit.summary,
+    service_notes: visit.serviceNotes,
+    food_items: visit.foodItems,
+    items_considered: visit.itemsConsidered,
+    items_passed_on: visit.itemsPassedOn,
+    want_to_try_next_time: visit.wantToTryNextTime,
+    total_spent: visit.totalSpent,
+    price_per_person: visit.pricePerPerson,
+    wait_time_minutes: visit.waitTimeMinutes,
+    atmosphere: visit.atmosphere,
+    cleanliness: visit.cleanliness,
+    overall_value: visit.overallValue,
+    private_notes: visit.privateNotes,
+    photos: visit.photos,
+  }
+}
+
 export async function getVisits(): Promise<DiningVisit[]> {
   const { data, error } = await supabase
     .from("visits")
@@ -74,33 +99,25 @@ export async function addVisit(visit: Omit<DiningVisit, "id">): Promise<DiningVi
   const id = crypto.randomUUID()
   const { data, error } = await supabase
     .from("visits")
-    .insert({
-      id,
-      restaurant: visit.restaurant,
-      location: visit.location,
-      date: visit.date,
-      occasion: visit.occasion,
-      companions: visit.companions,
-      overall_rating: visit.overallRating,
-      summary: visit.summary,
-      service_notes: visit.serviceNotes,
-      food_items: visit.foodItems,
-      items_considered: visit.itemsConsidered,
-      items_passed_on: visit.itemsPassedOn,
-      want_to_try_next_time: visit.wantToTryNextTime,
-      total_spent: visit.totalSpent,
-      price_per_person: visit.pricePerPerson,
-      wait_time_minutes: visit.waitTimeMinutes,
-      atmosphere: visit.atmosphere,
-      cleanliness: visit.cleanliness,
-      overall_value: visit.overallValue,
-      private_notes: visit.privateNotes,
-      photos: visit.photos,
-    })
+    .insert({ id, ...visitToRow(visit) })
     .select("*")
     .single()
   if (error) throw new Error(error.message)
   return rowToVisit(data as VisitRow)
+}
+
+export async function updateVisit(
+  id: string,
+  visit: Omit<DiningVisit, "id">
+): Promise<DiningVisit | undefined> {
+  const { data, error } = await supabase
+    .from("visits")
+    .update(visitToRow(visit))
+    .eq("id", id)
+    .select("*")
+    .maybeSingle()
+  if (error) throw new Error(error.message)
+  return data ? rowToVisit(data as VisitRow) : undefined
 }
 
 export async function deleteVisit(id: string): Promise<boolean> {
