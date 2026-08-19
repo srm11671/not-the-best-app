@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Masthead } from "@/components/masthead"
-import { NTB_TIERS, NTBRating, FoodItem, ConsideredItem } from "@/types"
+import { NTB_TIERS, NTBRating, FoodItem, ConsideredItem, DiningVisit } from "@/types"
 import { ArrowLeft, Plus, Trash2 } from "lucide-react"
 import Link from "next/link"
 
@@ -15,29 +15,34 @@ function emptyConsidered(): ConsideredItem {
   return { id: crypto.randomUUID(), name: "", reason: "" }
 }
 
-export function NewVisitForm() {
+interface NewVisitFormProps {
+  visitId?: string
+  initialData?: DiningVisit
+}
+
+export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
 
-  const [restaurant, setRestaurant] = useState("")
-  const [location, setLocation] = useState("")
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
-  const [occasion, setOccasion] = useState("")
-  const [companions, setCompanions] = useState("")
-  const [overallRating, setOverallRating] = useState<NTBRating>("its-fine")
-  const [summary, setSummary] = useState("")
-  const [serviceNotes, setServiceNotes] = useState("")
-  const [foodItems, setFoodItems] = useState<FoodItem[]>([emptyFoodItem()])
-  const [itemsConsidered, setItemsConsidered] = useState<ConsideredItem[]>([])
-  const [wantToTryNextTime, setWantToTryNextTime] = useState("")
-  const [totalSpent, setTotalSpent] = useState("")
-  const [pricePerPerson, setPricePerPerson] = useState("")
-  const [waitTimeMinutes, setWaitTimeMinutes] = useState("")
-  const [atmosphere, setAtmosphere] = useState(7)
-  const [cleanliness, setCleanliness] = useState(7)
-  const [overallValue, setOverallValue] = useState(7)
-  const [privateNotes, setPrivateNotes] = useState("")
-  const [photos, setPhotos] = useState("0")
+  const [restaurant, setRestaurant] = useState(initialData?.restaurant ?? "")
+  const [location, setLocation] = useState(initialData?.location ?? "")
+  const [date, setDate] = useState(initialData?.date ?? new Date().toISOString().slice(0, 10))
+  const [occasion, setOccasion] = useState(initialData?.occasion ?? "")
+  const [companions, setCompanions] = useState(initialData?.companions?.join(", ") ?? "")
+  const [overallRating, setOverallRating] = useState<NTBRating>(initialData?.overallRating ?? "its-fine")
+  const [summary, setSummary] = useState(initialData?.summary ?? "")
+  const [serviceNotes, setServiceNotes] = useState(initialData?.serviceNotes?.join("\n") ?? "")
+  const [foodItems, setFoodItems] = useState<FoodItem[]>(initialData?.foodItems?.length ? initialData.foodItems : [emptyFoodItem()])
+  const [itemsConsidered, setItemsConsidered] = useState<ConsideredItem[]>(initialData?.itemsConsidered ?? [])
+  const [wantToTryNextTime, setWantToTryNextTime] = useState(initialData?.wantToTryNextTime?.join("\n") ?? "")
+  const [totalSpent, setTotalSpent] = useState(initialData?.totalSpent ? String(initialData.totalSpent) : "")
+  const [pricePerPerson, setPricePerPerson] = useState(initialData?.pricePerPerson ? String(initialData.pricePerPerson) : "")
+  const [waitTimeMinutes, setWaitTimeMinutes] = useState(initialData?.waitTimeMinutes ? String(initialData.waitTimeMinutes) : "")
+  const [atmosphere, setAtmosphere] = useState(initialData?.atmosphere ?? 7)
+  const [cleanliness, setCleanliness] = useState(initialData?.cleanliness ?? 7)
+  const [overallValue, setOverallValue] = useState(initialData?.overallValue ?? 7)
+  const [privateNotes, setPrivateNotes] = useState(initialData?.privateNotes ?? "")
+  const [photos, setPhotos] = useState(initialData?.photos ? String(initialData.photos) : "0")
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -65,8 +70,8 @@ export function NewVisitForm() {
       photos: Number(photos) || 0,
     }
 
-    const res = await fetch("/api/visits", {
-      method: "POST",
+    const res = await fetch(visitId ? `/api/visits/${visitId}` : "/api/visits", {
+      method: visitId ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     })
