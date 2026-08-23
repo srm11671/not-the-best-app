@@ -1,8 +1,9 @@
-import { supabase } from "@/lib/supabase"
+import { createClient } from "@/lib/supabase/server"
 import { DiningVisit } from "@/types"
 
 interface VisitRow {
   id: string
+  user_id: string
   restaurant: string
   location: string
   date: string
@@ -23,6 +24,8 @@ interface VisitRow {
   overall_value: number
   private_notes: string
   photos: number
+  baldy_rating: number | null
+  baldy_review_url: string | null
 }
 
 function rowToVisit(row: VisitRow): DiningVisit {
@@ -48,6 +51,8 @@ function rowToVisit(row: VisitRow): DiningVisit {
     overallValue: Number(row.overall_value) || 0,
     privateNotes: row.private_notes,
     photos: Number(row.photos) || 0,
+    baldyRating: row.baldy_rating !== null ? Number(row.baldy_rating) : undefined,
+    baldyReviewUrl: row.baldy_review_url ?? undefined,
   }
 }
 
@@ -73,33 +78,56 @@ function visitToRow(visit: Omit<DiningVisit, "id">) {
     overall_value: visit.overallValue,
     private_notes: visit.privateNotes,
     photos: visit.photos,
+    baldy_rating: visit.baldyRating ?? null,
+    baldy_review_url: visit.baldyReviewUrl ?? null,
   }
 }
 
+// Every function below uses the per-request Supabase client, which
+// carries the logged-in user's session. Combined with Row Level
+// Security policies on the `visits` table, Postgres itself enforces
+// that a user can only ever read or write their own rows -- the
+// .eq("user_id", user.id) calls here are a second layer of safety,
+// not the only one.
+
+async function requireUser() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Not authenticated")
+  return { supabase, user }
+}
+
 export async function getVisits(): Promise<DiningVisit[]> {
+  const { supabase, user } = await requireUser()
   const { data, error } = await supabase
     .from("visits")
     .select("*")
+    .eq("user_id", user.id)
     .order("date", { ascending: false })
   if (error) throw new Error(error.message)
   return (data as VisitRow[]).map(rowToVisit)
 }
 
 export async function getVisit(id: string): Promise<DiningVisit | undefined> {
+  const { supabase, user } = await requireUser()
   const { data, error } = await supabase
     .from("visits")
     .select("*")
     .eq("id", id)
+    .eq("user_id", user.id)
     .maybeSingle()
   if (error) throw new Error(error.message)
   return data ? rowToVisit(data as VisitRow) : undefined
 }
 
 export async function addVisit(visit: Omit<DiningVisit, "id">): Promise<DiningVisit> {
+  const { supabase, user } = await requireUser()
   const id = crypto.randomUUID()
   const { data, error } = await supabase
     .from("visits")
-    .insert({ id, ...visitToRow(visit) })
+    .insert({ id, user_id: user.id, ...visitToRow(visit) })
     .select("*")
     .single()
   if (error) throw new Error(error.message)
@@ -110,10 +138,12 @@ export async function updateVisit(
   id: string,
   visit: Omit<DiningVisit, "id">
 ): Promise<DiningVisit | undefined> {
+  const { supabase, user } = await requireUser()
   const { data, error } = await supabase
     .from("visits")
     .update(visitToRow(visit))
     .eq("id", id)
+    .eq("user_id", user.id)
     .select("*")
     .maybeSingle()
   if (error) throw new Error(error.message)
@@ -121,7 +151,12 @@ export async function updateVisit(
 }
 
 export async function deleteVisit(id: string): Promise<boolean> {
-  const { error } = await supabase.from("visits").delete().eq("id", id)
+  const { supabase, user } = await requireUser()
+  const { error } = await supabase
+    .from("visits")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id)
   if (error) throw new Error(error.message)
   return true
 }

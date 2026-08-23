@@ -1,4 +1,4 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr"
+import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
 // Routes that don't require a logged-in user at all.
@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
+        setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
@@ -56,14 +56,8 @@ export async function middleware(request: NextRequest) {
 
   // Trial / payment gate -- only relevant for logged-in users hitting
   // a route that isn't already the paywall or a payment endpoint.
-  const adminEmails = (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean)
-  const isAdmin = !!user?.email && adminEmails.includes(user.email.toLowerCase())
-
   const isAllowedWhileUnpaid = ALLOWED_WHILE_UNPAID.some((p) => path.startsWith(p))
-  if (user && !isPublicPath && !isAllowedWhileUnpaid && !isAdmin) {
+  if (user && !isPublicPath && !isAllowedWhileUnpaid) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("paid, trial_ends_at")

@@ -1,7 +1,14 @@
 import Link from "next/link"
 import { LogoMark } from "@/components/logo-mark"
+import { LogoutButton } from "@/components/logout-button"
+import { createClient } from "@/lib/supabase/server"
 
-export function Masthead() {
+export async function Masthead() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   return (
     <header className="border-b-2 border-[--ink] pb-4 mb-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -27,6 +34,12 @@ export function Masthead() {
           </Link>
         </nav>
       </div>
+      {user && (
+        <div className="mt-3 flex items-center justify-between text-xs stamp" style={{ color: "var(--ink-soft)" }}>
+          <span>Signed in as {user.email}</span>
+          <LogoutButton />
+        </div>
+      )}
       <p className="mt-2 font-body italic text-sm md:text-base" style={{ color: "var(--ink-soft)" }}>
         Every meal becomes a memory. Every memory becomes knowledge. Every future dining decision becomes smarter.
       </p>

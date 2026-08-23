@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { DiningVisit } from "@/types"
 import { NTBBadge } from "@/components/ntb-badge"
+import { BaldyCompareBadge } from "@/components/baldy-compare-badge"
 import { MapPin, Calendar, Users, Image as ImageIcon } from "lucide-react"
 import { format, parseISO } from "date-fns"
 
@@ -50,6 +51,15 @@ export function VisitCard({ visit }: VisitCardProps) {
           </span>
         ))}
       </div>
+      {visit.baldyRating != null && (
+        <div className="mt-3">
+          <BaldyCompareBadge
+            overallRating={visit.overallRating}
+            baldyRating={visit.baldyRating}
+            baldyReviewUrl={visit.baldyReviewUrl}
+          />
+        </div>
+      )}
     </Link>
   )
 }

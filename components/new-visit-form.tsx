@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Masthead } from "@/components/masthead"
 import { NTB_TIERS, NTBRating, FoodItem, ConsideredItem, DiningVisit } from "@/types"
 import { ArrowLeft, Plus, Trash2 } from "lucide-react"
 import Link from "next/link"
@@ -43,6 +42,8 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
   const [overallValue, setOverallValue] = useState(initialData?.overallValue ?? 7)
   const [privateNotes, setPrivateNotes] = useState(initialData?.privateNotes ?? "")
   const [photos, setPhotos] = useState(initialData?.photos ? String(initialData.photos) : "0")
+  const [baldyRating, setBaldyRating] = useState(initialData?.baldyRating != null ? String(initialData.baldyRating) : "")
+  const [baldyReviewUrl, setBaldyReviewUrl] = useState(initialData?.baldyReviewUrl ?? "")
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -68,6 +69,8 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
       overallValue,
       privateNotes,
       photos: Number(photos) || 0,
+      baldyRating: baldyRating.trim() ? Math.min(10, Math.max(0, Number(baldyRating))) : undefined,
+      baldyReviewUrl: baldyReviewUrl.trim() || undefined,
     }
 
     const res = await fetch(visitId ? `/api/visits/${visitId}` : "/api/visits", {
@@ -87,7 +90,6 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <Masthead />
       <Link href="/" className="mb-6 inline-flex items-center gap-1 text-sm hover:text-[--rust]">
         <ArrowLeft className="h-4 w-4" /> Back to timeline
       </Link>
@@ -136,6 +138,40 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
                 {tier.glyph} {tier.label}
               </button>
             ))}
+          </div>
+        </section>
+
+        <section>
+          <label className={labelClass}>Baldy Eats (optional)</label>
+          <p className="text-xs mb-2" style={{ color: "var(--ink-soft)" }}>
+            If Baldy Eats has reviewed this spot, enter his score and a link so you can compare it to your own rating.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className={labelClass}>His score (0–10)</label>
+              <input
+                type="number"
+                min={0}
+                max={10}
+                step={0.1}
+                className={inputClass}
+                style={{ borderColor: "var(--line)" }}
+                value={baldyRating}
+                onChange={(e) => setBaldyRating(e.target.value)}
+                placeholder="9.8"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className={labelClass}>Link to his review</label>
+              <input
+                type="url"
+                className={inputClass}
+                style={{ borderColor: "var(--line)" }}
+                value={baldyReviewUrl}
+                onChange={(e) => setBaldyReviewUrl(e.target.value)}
+                placeholder="https://www.instagram.com/reel/..."
+              />
+            </div>
           </div>
         </section>
 
