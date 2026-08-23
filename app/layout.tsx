@@ -17,7 +17,7 @@ const body = Newsreader({
 })
 
 export const metadata: Metadata = {
-  title: "NOT THE BEST® — Personal Dining Memory",
+  title: "Mo's Not The Best® — Personal Dining Memory",
   description:
     "The world's leading Personal Dining Memory Platform. Every meal becomes a memory.",
 }

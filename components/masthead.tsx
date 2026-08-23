@@ -15,7 +15,7 @@ export async function Masthead() {
         <Link href="/" className="group flex items-center gap-3 min-w-0">
           <LogoMark size={44} />
           <h1 className="font-display text-2xl sm:text-3xl md:text-5xl font-black tracking-tight leading-none truncate">
-            NOT THE BEST<span className="align-super text-lg">®</span>
+            MO&apos;S NOT THE BEST<span className="align-super text-lg">®</span>
           </h1>
         </Link>
         <nav className="flex flex-wrap items-center gap-3 sm:gap-6 text-sm stamp">

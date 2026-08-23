@@ -15,7 +15,7 @@ export default function LoginPage({
       <div className="flex flex-col items-center gap-3 mb-8">
         <LogoMark size={48} />
         <h1 className="font-display text-2xl font-black tracking-tight">
-          NOT THE BEST<span className="align-super text-base">®</span>
+          MO&apos;S NOT THE BEST<span className="align-super text-base">®</span>
         </h1>
         <p className="text-sm text-center" style={{ color: "var(--ink-soft)" }}>
           Sign in to start (or continue) your own personal dining timeline.
