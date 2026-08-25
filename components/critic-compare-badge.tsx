@@ -35,13 +35,7 @@ export function CriticCompareBadge({ overallRating, criticRating, criticReviewUr
   if (!criticReviewUrl) return content
 
   return (
-    
-      href={criticReviewUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={(e) => e.stopPropagation()}
-      className="hover:opacity-80 transition-opacity"
-    >
+    <a href={criticReviewUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="hover:opacity-80 transition-opacity">
       {content}
     </a>
   )
