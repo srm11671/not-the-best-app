@@ -2,8 +2,8 @@ import { getVisits } from "@/lib/store"
 import { Masthead } from "@/components/masthead"
 import { VisitCard } from "@/components/visit-card"
 import { TrialBanner } from "@/components/trial-banner"
-import { TestingNotice } from "@/components/testing-notice"import { NTB_TIERS } from "@/types"
-import Link from "next/link"
+import { TestingNotice } from "@/components/testing-notice"
+import { NTB_TIERS } from "@/types"import Link from "next/link"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
