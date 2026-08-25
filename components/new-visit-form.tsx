@@ -42,8 +42,9 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
   const [overallValue, setOverallValue] = useState(initialData?.overallValue ?? 7)
   const [privateNotes, setPrivateNotes] = useState(initialData?.privateNotes ?? "")
   const [photos, setPhotos] = useState(initialData?.photos ? String(initialData.photos) : "0")
-  const [baldyRating, setBaldyRating] = useState(initialData?.baldyRating != null ? String(initialData.baldyRating) : "")
-  const [baldyReviewUrl, setBaldyReviewUrl] = useState(initialData?.baldyReviewUrl ?? "")
+  const [criticName, setCriticName] = useState(initialData?.criticName ?? "")
+  const [criticRating, setCriticRating] = useState(initialData?.criticRating != null ? String(initialData.criticRating) : "")
+  const [criticReviewUrl, setCriticReviewUrl] = useState(initialData?.criticReviewUrl ?? "")
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -69,8 +70,9 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
       overallValue,
       privateNotes,
       photos: Number(photos) || 0,
-      baldyRating: baldyRating.trim() ? Math.min(10, Math.max(0, Number(baldyRating))) : undefined,
-      baldyReviewUrl: baldyReviewUrl.trim() || undefined,
+      criticName: criticName.trim() || undefined,
+      criticRating: criticRating.trim() ? Math.min(10, Math.max(0, Number(criticRating))) : undefined,
+      criticReviewUrl: criticReviewUrl.trim() || undefined,
     }
 
     const res = await fetch(visitId ? `/api/visits/${visitId}` : "/api/visits", {
@@ -141,14 +143,25 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
           </div>
         </section>
 
-        <section>
-          <label className={labelClass}>Baldy Eats (optional)</label>
+                <section>
+          <label className={labelClass}>Local Critic (optional)</label>
           <p className="text-xs mb-2" style={{ color: "var(--ink-soft)" }}>
-            If Baldy Eats has reviewed this spot, enter his score and a link so you can compare it to your own rating.
+            If a food critic you follow has reviewed this spot, enter their name and score so you can compare it to your own rating.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className={labelClass}>His score (0–10)</label>
+              <label className={labelClass}>Critic's name</label>
+              <input
+                type="text"
+                className={inputClass}
+                style={{ borderColor: "var(--line)" }}
+                value={criticName}
+                onChange={(e) => setCriticName(e.target.value)}
+                placeholder="e.g. Baldy Eats"
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Their score (0–10)</label>
               <input
                 type="number"
                 min={0}
@@ -156,19 +169,19 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
                 step={0.1}
                 className={inputClass}
                 style={{ borderColor: "var(--line)" }}
-                value={baldyRating}
-                onChange={(e) => setBaldyRating(e.target.value)}
+                value={criticRating}
+                onChange={(e) => setCriticRating(e.target.value)}
                 placeholder="9.8"
               />
             </div>
-            <div className="sm:col-span-2">
-              <label className={labelClass}>Link to his review</label>
+            <div>
+              <label className={labelClass}>Link to their review</label>
               <input
                 type="url"
                 className={inputClass}
                 style={{ borderColor: "var(--line)" }}
-                value={baldyReviewUrl}
-                onChange={(e) => setBaldyReviewUrl(e.target.value)}
+                value={criticReviewUrl}
+                onChange={(e) => setCriticReviewUrl(e.target.value)}
                 placeholder="https://www.instagram.com/reel/..."
               />
             </div>

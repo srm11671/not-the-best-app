@@ -29,6 +29,7 @@ interface VisitRow {
   photos: number
   baldy_rating: number | null
   baldy_review_url: string | null
+  critic_name: string | null
 }
 
 function rowToVisit(row: VisitRow): DiningVisit {
@@ -54,8 +55,9 @@ function rowToVisit(row: VisitRow): DiningVisit {
     overallValue: Number(row.overall_value) || 0,
     privateNotes: row.private_notes,
     photos: Number(row.photos) || 0,
-    baldyRating: row.baldy_rating !== null ? Number(row.baldy_rating) : undefined,
-    baldyReviewUrl: row.baldy_review_url ?? undefined,
+    criticRating: row.baldy_rating !== null ? Number(row.baldy_rating) : undefined,
+    criticReviewUrl: row.baldy_review_url ?? undefined,
+    criticName: row.critic_name ?? undefined,
   }
 }
 
@@ -81,8 +83,9 @@ function visitToRow(visit: Omit<DiningVisit, "id">) {
     overall_value: visit.overallValue,
     private_notes: visit.privateNotes,
     photos: visit.photos,
-    baldy_rating: visit.baldyRating ?? null,
-    baldy_review_url: visit.baldyReviewUrl ?? null,
+    baldy_rating: visit.criticRating ?? null,
+    baldy_review_url: visit.criticReviewUrl ?? null,
+    critic_name: visit.criticName ?? null,
   }
 }
 

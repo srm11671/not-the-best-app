@@ -51,9 +51,9 @@ export const NTB_TIERS: NTBTierInfo[] = [
   },
 ]
 
-// Rough mapping so a 0-10 score (like Baldy Eats' rating scale) can be
-// compared against the NTB tiers. This is a presentational estimate,
-// not a claim about what Baldy himself intended his number to mean.
+// Rough mapping so a 0-10 critic score can be compared against the
+// NTB tiers. This is a presentational estimate, not a claim about
+// what any specific critic intended their number to mean.
 export function scoreToNTBTier(score: number): NTBRating {
   if (score >= 9) return "hidden-gem"
   if (score >= 7) return "solid-choice"
@@ -98,6 +98,7 @@ export interface DiningVisit {
   overallValue: number
   privateNotes: string
   photos: number
-  baldyRating?: number
-  baldyReviewUrl?: string
+  criticName?: string
+  criticRating?: number
+  criticReviewUrl?: string
 }
