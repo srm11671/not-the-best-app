@@ -14,6 +14,12 @@ const ALLOWED_WHILE_UNPAID = [
 ]
 
 export async function middleware(request: NextRequest) {
+  // Toggle: set REQUIRE_AUTH=true in env vars to turn login + trial +
+  // paywall back on. Unset or "false" means the app is fully open --
+  // no login, shared data for everyone.
+  if (process.env.REQUIRE_AUTH !== "true") {
+    return NextResponse.next()
+  }
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(

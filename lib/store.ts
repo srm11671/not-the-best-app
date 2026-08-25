@@ -1,9 +1,12 @@
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { DiningVisit } from "@/types"
+
+const AUTH_REQUIRED = process.env.REQUIRE_AUTH === "true"
 
 interface VisitRow {
   id: string
-  user_id: string
+  user_id: string | null
   restaurant: string
   location: string
   date: string
@@ -83,14 +86,23 @@ function visitToRow(visit: Omit<DiningVisit, "id">) {
   }
 }
 
-// Every function below uses the per-request Supabase client, which
-// carries the logged-in user's session. Combined with Row Level
-// Security policies on the `visits` table, Postgres itself enforces
-// that a user can only ever read or write their own rows -- the
-// .eq("user_id", user.id) calls here are a second layer of safety,
-// not the only one.
+// Two modes, controlled by the REQUIRE_AUTH env var:
+//
+// - REQUIRE_AUTH=true: private mode. Uses the per-request client tied
+//   to the logged-in user's session. Combined with Row Level Security,
+//   a user can only ever read/write their own rows.
+//
+// - REQUIRE_AUTH unset/false: open mode. Everyone shares one pool of
+//   data. Uses the admin (service-role) client since there's no logged
+//   -in user to scope to, and skips user_id filtering entirely.
+//
+// Flip the env var later to switch back to private mode -- no code
+// changes needed.
 
-async function requireUser() {
+async function getClientAndUser() {
+  if (!AUTH_REQUIRED) {
+    return { supabase: createAdminClient(), user: null as { id: string } | null }
+  }
   const supabase = await createClient()
   const {
     data: { user },
@@ -100,36 +112,32 @@ async function requireUser() {
 }
 
 export async function getVisits(): Promise<DiningVisit[]> {
-  const { supabase, user } = await requireUser()
-  const { data, error } = await supabase
-    .from("visits")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("date", { ascending: false })
+  const { supabase, user } = await getClientAndUser()
+  let query = supabase.from("visits").select("*").order("date", { ascending: false })
+  if (AUTH_REQUIRED && user) query = query.eq("user_id", user.id)
+  const { data, error } = await query
   if (error) throw new Error(error.message)
   return (data as VisitRow[]).map(rowToVisit)
 }
 
 export async function getVisit(id: string): Promise<DiningVisit | undefined> {
-  const { supabase, user } = await requireUser()
-  const { data, error } = await supabase
-    .from("visits")
-    .select("*")
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .maybeSingle()
+  const { supabase, user } = await getClientAndUser()
+  let query = supabase.from("visits").select("*").eq("id", id)
+  if (AUTH_REQUIRED && user) query = query.eq("user_id", user.id)
+  const { data, error } = await query.maybeSingle()
   if (error) throw new Error(error.message)
   return data ? rowToVisit(data as VisitRow) : undefined
 }
 
 export async function addVisit(visit: Omit<DiningVisit, "id">): Promise<DiningVisit> {
-  const { supabase, user } = await requireUser()
+  const { supabase, user } = await getClientAndUser()
   const id = crypto.randomUUID()
-  const { data, error } = await supabase
-    .from("visits")
-    .insert({ id, user_id: user.id, ...visitToRow(visit) })
-    .select("*")
-    .single()
+  const row = {
+    id,
+    ...(AUTH_REQUIRED && user ? { user_id: user.id } : {}),
+    ...visitToRow(visit),
+  }
+  const { data, error } = await supabase.from("visits").insert(row).select("*").single()
   if (error) throw new Error(error.message)
   return rowToVisit(data as VisitRow)
 }
@@ -138,25 +146,19 @@ export async function updateVisit(
   id: string,
   visit: Omit<DiningVisit, "id">
 ): Promise<DiningVisit | undefined> {
-  const { supabase, user } = await requireUser()
-  const { data, error } = await supabase
-    .from("visits")
-    .update(visitToRow(visit))
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .select("*")
-    .maybeSingle()
+  const { supabase, user } = await getClientAndUser()
+  let query = supabase.from("visits").update(visitToRow(visit)).eq("id", id)
+  if (AUTH_REQUIRED && user) query = query.eq("user_id", user.id)
+  const { data, error } = await query.select("*").maybeSingle()
   if (error) throw new Error(error.message)
   return data ? rowToVisit(data as VisitRow) : undefined
 }
 
 export async function deleteVisit(id: string): Promise<boolean> {
-  const { supabase, user } = await requireUser()
-  const { error } = await supabase
-    .from("visits")
-    .delete()
-    .eq("id", id)
-    .eq("user_id", user.id)
+  const { supabase, user } = await getClientAndUser()
+  let query = supabase.from("visits").delete().eq("id", id)
+  if (AUTH_REQUIRED && user) query = query.eq("user_id", user.id)
+  const { error } = await query
   if (error) throw new Error(error.message)
   return true
 }
