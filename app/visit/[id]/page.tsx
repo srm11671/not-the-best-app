@@ -1,7 +1,7 @@
 import { getVisit } from "@/lib/store"
 import { Masthead } from "@/components/masthead"
 import { NTBBadge } from "@/components/ntb-badge"
-import { BaldyCompareBadge } from "@/components/baldy-compare-badge"
+import { CriticCompareBadge } from "@/components/critic-compare-badge"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, MapPin, Calendar, Users, Clock, DollarSign, Pencil } from "lucide-react"
@@ -54,12 +54,13 @@ export default async function VisitDetailPage({ params }: { params: { id: string
 
         <p className="mt-6 text-lg leading-relaxed font-body">{visit.summary}</p>
 
-        {visit.baldyRating != null && (
+            {visit.criticRating != null && (
           <div className="mt-4">
-            <BaldyCompareBadge
+            <CriticCompareBadge
               overallRating={visit.overallRating}
-              baldyRating={visit.baldyRating}
-              baldyReviewUrl={visit.baldyReviewUrl}
+              criticRating={visit.criticRating}
+              criticReviewUrl={visit.criticReviewUrl}
+              criticName={visit.criticName}
             />
           </div>
         )}
