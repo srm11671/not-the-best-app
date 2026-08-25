@@ -2,7 +2,7 @@ import { getVisits } from "@/lib/store"
 import { Masthead } from "@/components/masthead"
 import { VisitCard } from "@/components/visit-card"
 import { TrialBanner } from "@/components/trial-banner"
-import { NTB_TIERS } from "@/types"
+import { TestingNotice } from "@/components/testing-notice"import { NTB_TIERS } from "@/types"
 import Link from "next/link"
 
 export const dynamic = "force-dynamic"
@@ -18,8 +18,9 @@ export default async function HomePage() {
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
       <Masthead />
+      <TestingNotice />
       <TrialBanner />
-
+      
       <section className="mb-10 grid grid-cols-3 gap-4">
         <div className="paper-card rounded-md p-4 text-center">
           <div className="font-display text-3xl font-bold">{visits.length}</div>
