@@ -45,7 +45,57 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
   const [criticName, setCriticName] = useState(initialData?.criticName ?? "")
   const [criticRating, setCriticRating] = useState(initialData?.criticRating != null ? String(initialData.criticRating) : "")
   const [criticReviewUrl, setCriticReviewUrl] = useState(initialData?.criticReviewUrl ?? "")
+  const [scanning, setScanning] = useState(false)
+  const [scanError, setScanError] = useState("")
 
+  async function handleReceiptScan(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ""
+
+    setScanning(true)
+    setScanError("")
+
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve((reader.result as string).split(",")[1])
+        reader.onerror = () => reject(new Error("Could not read the photo"))
+        reader.readAsDataURL(file)
+      })
+
+      const res = await fetch("/api/scan-receipt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: base64, mediaType: file.type }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error ?? "Could not read receipt")
+
+      if (data.restaurant && !restaurant.trim()) setRestaurant(data.restaurant)
+      if (data.date) setDate(data.date)
+      if (data.total != null) setTotalSpent(String(data.total))
+
+      if (Array.isArray(data.items) && data.items.length > 0) {
+        const scannedItems: FoodItem[] = data.items.map((item: { name: string; price: number }) => ({
+          id: crypto.randomUUID(),
+          name: item.name,
+          rating: "its-fine" as NTBRating,
+          note: item.price != null ? `$${item.price.toFixed(2)}` : "",
+          wouldOrderAgain: false,
+        }))
+        setFoodItems((prev) => {
+          const withoutBlank = prev.filter((i) => i.name.trim() !== "")
+          return [...withoutBlank, ...scannedItems]
+        })
+      }
+    } catch (err) {
+      setScanError(err instanceof Error ? err.message : "Could not read receipt")
+    } finally {
+      setScanning(false)
+    }
+  }
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
