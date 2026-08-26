@@ -249,9 +249,40 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
         </section>
 
         <section>
+          <div className="rounded border-2 border-dashed p-4 text-center" style={{ borderColor: "var(--line)" }}>
+            <label className="inline-flex flex-col items-center gap-2 cursor-pointer">
+              <span className="text-sm font-semibold">
+                {scanning ? "Reading your receipt…" : "📷 Scan a receipt to fill in dishes & total"}
+              </span>
+              <span className="text-xs" style={{ color: "var(--ink-soft)" }}>
+                We'll pull item names and prices from the photo. You still rate everything yourself.
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleReceiptScan}
+                disabled={scanning}
+                className="hidden"
+              />
+              <span
+                className="mt-1 rounded-full px-4 py-1.5 text-xs font-semibold text-[--paper]"
+                style={{ backgroundColor: scanning ? "var(--ink-soft)" : "var(--ink)" }}
+              >
+                {scanning ? "Scanning…" : "Choose photo"}
+              </span>
+            </label>
+            {scanError && (
+              <p className="mt-2 text-xs" style={{ color: "var(--rust)" }}>
+                {scanError}
+              </p>
+            )}
+          </div>
+        </section>
+
+        <section>
           <div className="mb-2 flex items-center justify-between">
-            <label className={labelClass}>Food Review</label>
-            <button type="button" onClick={() => setFoodItems([...foodItems, emptyFoodItem()])} className="inline-flex items-center gap-1 text-xs stamp hover:text-[--rust]">
+            <label className={labelClass}>Food Review</label>            <button type="button" onClick={() => setFoodItems([...foodItems, emptyFoodItem()])} className="inline-flex items-center gap-1 text-xs stamp hover:text-[--rust]">
               <Plus className="h-3.5 w-3.5" /> Add dish
             </button>
           </div>
