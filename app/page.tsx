@@ -3,12 +3,12 @@ import { Masthead } from "@/components/masthead"
 import { VisitCard } from "@/components/visit-card"
 import { TrialBanner } from "@/components/trial-banner"
 import { TestingNotice } from "@/components/testing-notice"
-import { NTB_TIERS } from "@/types"import Link from "next/link"
+import { NTB_TIERS } from "@/types"
+import Link from "next/link"
 
 export const dynamic = "force-dynamic"
 export const revalidate = 0
 export const fetchCache = "force-no-store"
-
 export default async function HomePage() {
   const visits = await getVisits()
 
