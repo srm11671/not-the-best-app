@@ -74,6 +74,7 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
       if (!res.ok) throw new Error(data.error ?? "Could not read receipt")
 
       if (data.restaurant && !restaurant.trim()) setRestaurant(data.restaurant)
+      if (data.address && !location.trim()) setLocation(data.address)
       if (data.date) setDate(data.date)
       if (data.total != null) setTotalSpent(String(data.total))
 
@@ -260,7 +261,6 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
               <input
                 type="file"
                 accept="image/*"
-                capture="environment"
                 onChange={handleReceiptScan}
                 disabled={scanning}
                 className="hidden"
