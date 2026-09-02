@@ -5,6 +5,8 @@ import { NextResponse } from "next/server"
 // This only extracts what the receipt literally says -- it never
 // infers or guesses a rating, since a receipt can't say whether the
 // food was good. The person still rates everything themselves.
+// Drinks/beverages are deliberately excluded from "items" -- this app
+// tracks food dishes, not what was ordered to drink.
 
 export async function POST(request: Request) {
   try {
@@ -47,7 +49,7 @@ export async function POST(request: Request) {
   "total": 0.00,
   "date": "YYYY-MM-DD or null if not visible"
 }
-Only include items and amounts that are actually printed on the receipt. Do not invent or guess anything. If a field isn't visible, use null.`,
+"items" must only include FOOD dishes (appetizers, entrees, sides, desserts). Do NOT include drinks or beverages of any kind -- no soda, coffee, tea, water, juice, beer, wine, cocktails, or any other alcohol. Skip those lines entirely, even though they were paid for. "total" should still be the full receipt total including drinks, tax, and tip. Only include items and amounts that are actually printed on the receipt. Do not invent or guess anything. If a field isn't visible, use null.`,
               },
             ],
           },
