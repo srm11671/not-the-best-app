@@ -42,6 +42,7 @@ export async function POST(request: Request) {
                 text: `Read this restaurant receipt. Respond with ONLY valid JSON, no other text, in exactly this shape:
 {
   "restaurant": "name as printed, or null if not visible",
+  "address": "the street address or location line as printed on the receipt, or null if not visible",
   "items": [{ "name": "item name", "price": 0.00 }],
   "total": 0.00,
   "date": "YYYY-MM-DD or null if not visible"
