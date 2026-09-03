@@ -35,7 +35,6 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
   const [itemsConsidered, setItemsConsidered] = useState<ConsideredItem[]>(initialData?.itemsConsidered ?? [])
   const [wantToTryNextTime, setWantToTryNextTime] = useState(initialData?.wantToTryNextTime?.join("\n") ?? "")
   const [totalSpent, setTotalSpent] = useState(initialData?.totalSpent ? String(initialData.totalSpent) : "")
-  const [pricePerPerson, setPricePerPerson] = useState(initialData?.pricePerPerson ? String(initialData.pricePerPerson) : "")
   const [waitTimeMinutes, setWaitTimeMinutes] = useState(initialData?.waitTimeMinutes ? String(initialData.waitTimeMinutes) : "")
   const [atmosphere, setAtmosphere] = useState(initialData?.atmosphere ?? 7)
   const [cleanliness, setCleanliness] = useState(initialData?.cleanliness ?? 7)
@@ -47,6 +46,14 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
   const [criticReviewUrl, setCriticReviewUrl] = useState(initialData?.criticReviewUrl ?? "")
   const [scanning, setScanning] = useState(false)
   const [scanError, setScanError] = useState("")
+
+  const companionCount = companions.split(",").map((c) => c.trim()).filter(Boolean).length
+  const totalDiners = companionCount + 1
+  const parsedTotal = Number(totalSpent)
+  const computedPricePerPerson =
+    totalSpent.trim() && !Number.isNaN(parsedTotal) && parsedTotal > 0
+      ? Math.max(0, parsedTotal / totalDiners)
+      : 0
 
   async function handleReceiptScan(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -114,7 +121,7 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
       itemsPassedOn: [],
       wantToTryNextTime: wantToTryNextTime.split("\n").map((s) => s.trim()).filter(Boolean),
       totalSpent: Number(totalSpent) || 0,
-      pricePerPerson: Number(pricePerPerson) || 0,
+      pricePerPerson: computedPricePerPerson,
       waitTimeMinutes: Number(waitTimeMinutes) || 0,
       atmosphere,
       cleanliness,
@@ -302,7 +309,7 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
                     }}
                   />
                   <button type="button" onClick={() => setFoodItems(foodItems.filter((_, i) => i !== idx))} className="shrink-0 text-[--rust]">
-                    <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2">
@@ -391,7 +398,7 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
-            ))}
+           ))}
           </div>
         </section>
 
@@ -407,7 +414,12 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
           </div>
           <div>
             <label className={labelClass}>Per Person ($)</label>
-            <input type="number" className={inputClass} style={{ borderColor: "var(--line)" }} value={pricePerPerson} onChange={(e) => setPricePerPerson(e.target.value)} />
+            <div className={inputClass} style={{ borderColor: "var(--line)" }}>
+              {computedPricePerPerson.toFixed(2)}
+            </div>
+            <p className="mt-1 text-[11px]" style={{ color: "var(--ink-soft)" }}>
+              Auto-calculated: Total Spent ÷ {totalDiners} {totalDiners === 1 ? "person" : "people"}
+            </p>
           </div>
           <div>
             <label className={labelClass}>Wait (min)</label>
