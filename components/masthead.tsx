@@ -25,6 +25,9 @@ export async function Masthead() {
           <Link href="/rating" className="hover:text-[--rust] transition-colors">
             NTB Rating™
           </Link>
+          <Link href="/teams" className="hover:text-[--rust] transition-colors">
+            Teams
+          </Link>
           <Link
             href="/visit/new"
             className="rounded-full text-[--paper] px-4 py-2 hover:opacity-90 transition-opacity normal-case font-semibold not-italic"

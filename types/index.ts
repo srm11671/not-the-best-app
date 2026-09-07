@@ -102,3 +102,27 @@ export interface DiningVisit {
   criticRating?: number
   criticReviewUrl?: string
 }
+
+export interface Team {
+  id: string
+  name: string
+  slug: string
+  inviteCode: string
+  visibility: "private" | "public"
+  createdBy: string | null
+  createdAt: string
+  memberCount?: number
+  isMember?: boolean
+  isAdmin?: boolean
+}
+
+export interface TeamMember {
+  id: string
+  teamId: string
+  userId: string | null
+  displayName: string
+  role: string
+  experience: string
+  isAdmin: boolean
+  joinedAt: string
+}
