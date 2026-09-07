@@ -7,6 +7,7 @@ const AUTH_REQUIRED = process.env.REQUIRE_AUTH === "false"
 interface VisitRow {
   id: string
   user_id: string | null
+  team_id: string | null
   restaurant: string
   location: string
   date: string
@@ -58,6 +59,7 @@ function rowToVisit(row: VisitRow): DiningVisit {
     criticRating: row.baldy_rating !== null ? Number(row.baldy_rating) : undefined,
     criticReviewUrl: row.baldy_review_url ?? undefined,
     criticName: row.critic_name ?? undefined,
+    teamId: row.team_id ?? null,
   }
 }
 
@@ -86,6 +88,7 @@ function visitToRow(visit: Omit<DiningVisit, "id">) {
     baldy_rating: visit.criticRating ?? null,
     baldy_review_url: visit.criticReviewUrl ?? null,
     critic_name: visit.criticName ?? null,
+    team_id: visit.teamId ?? null,
   }
 }
 
@@ -114,11 +117,27 @@ async function getClientAndUser() {
   return { supabase, user }
 }
 
+// Main personal timeline -- deliberately excludes any visit tagged to a
+// team. Team-tagged visits only ever show up on that team's own page
+// (see getTeamVisits below), so a visit logged for a team doesn't also
+// clutter the personal feed.
 export async function getVisits(): Promise<DiningVisit[]> {
   const { supabase, user } = await getClientAndUser()
-  let query = supabase.from("visits").select("*").order("date", { ascending: false })
+  let query = supabase.from("visits").select("*").is("team_id", null).order("date", { ascending: false })
   if (AUTH_REQUIRED && user) query = query.eq("user_id", user.id)
   const { data, error } = await query
+  if (error) throw new Error(error.message)
+  return (data as VisitRow[]).map(rowToVisit)
+}
+
+// Visits tagged to a specific team, for that team's page.
+export async function getTeamVisits(teamId: string): Promise<DiningVisit[]> {
+  const { supabase } = await getClientAndUser()
+  const { data, error } = await supabase
+    .from("visits")
+    .select("*")
+    .eq("team_id", teamId)
+    .order("date", { ascending: false })
   if (error) throw new Error(error.message)
   return (data as VisitRow[]).map(rowToVisit)
 }

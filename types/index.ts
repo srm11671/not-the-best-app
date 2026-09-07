@@ -101,6 +101,7 @@ export interface DiningVisit {
   criticName?: string
   criticRating?: number
   criticReviewUrl?: string
+  teamId?: string | null
 }
 
 export interface Team {

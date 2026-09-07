@@ -1,7 +1,9 @@
 import { getTeam, getTeamMembers } from "@/lib/teams-store"
+import { getTeamVisits } from "@/lib/store"
 import { createClient } from "@/lib/supabase/server"
 import { Masthead } from "@/components/masthead"
 import { InviteCodePanel } from "@/components/invite-code-panel"
+import { VisitCard } from "@/components/visit-card"
 import { Lock, Globe, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
@@ -15,9 +17,11 @@ const AUTH_REQUIRED = process.env.REQUIRE_AUTH === "false"
 export default async function TeamDetailPage({ params }: { params: { id: string } }) {
   let team
   let members
+  let visits: Awaited<ReturnType<typeof getTeamVisits>> = []
   try {
     team = await getTeam(params.id)
     members = team ? await getTeamMembers(params.id) : []
+    visits = team ? await getTeamVisits(params.id) : []
   } catch {
     notFound()
   }
@@ -95,6 +99,30 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
                 )}
               </div>
             </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-10 mb-4 flex items-center justify-between">
+        <h3 className="font-display text-xl font-semibold">Team Visits</h3>
+        <Link
+          href={`/visit/new?teamId=${team.id}`}
+          className="rounded-full text-[--paper] px-4 py-2 text-sm hover:opacity-90 transition-opacity font-semibold"
+          style={{ backgroundColor: "var(--ink)" }}
+        >
+          + Log a Visit
+        </Link>
+      </div>
+      {visits.length === 0 ? (
+        <div className="paper-card rounded-md p-8 text-center">
+          <p className="text-sm" style={{ color: "var(--ink-soft)" }}>
+            No visits logged for this team yet.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-5">
+          {visits.map((visit) => (
+            <VisitCard key={visit.id} visit={visit} />
           ))}
         </div>
       )}

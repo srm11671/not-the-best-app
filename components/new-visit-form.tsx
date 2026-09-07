@@ -17,9 +17,12 @@ function emptyConsidered(): ConsideredItem {
 interface NewVisitFormProps {
   visitId?: string
   initialData?: DiningVisit
+  teamId?: string
+  teamName?: string
 }
 
-export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
+export function NewVisitForm({ visitId, initialData, teamId, teamName }: NewVisitFormProps = {}) {
+  const effectiveTeamId = initialData?.teamId ?? teamId ?? null
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
 
@@ -131,6 +134,7 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
       criticName: criticName.trim() || undefined,
       criticRating: criticRating.trim() ? Math.min(10, Math.max(0, Number(criticRating))) : undefined,
       criticReviewUrl: criticReviewUrl.trim() || undefined,
+      teamId: effectiveTeamId,
     }
 
     const res = await fetch(visitId ? `/api/visits/${visitId}` : "/api/visits", {
@@ -140,7 +144,7 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
     })
     const visit = await res.json()
     setSubmitting(false)
-    router.push(`/visit/${visit.id}`)
+    router.push(effectiveTeamId ? `/teams/${effectiveTeamId}` : `/visit/${visit.id}`)
     router.refresh()
   }
 
@@ -150,11 +154,17 @@ export function NewVisitForm({ visitId, initialData }: NewVisitFormProps = {}) {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <Link href="/" className="mb-6 inline-flex items-center gap-1 text-sm hover:text-[--rust]">
-        <ArrowLeft className="h-4 w-4" /> Back to timeline
+      <Link href={effectiveTeamId ? `/teams/${effectiveTeamId}` : "/"} className="mb-6 inline-flex items-center gap-1 text-sm hover:text-[--rust]">
+        <ArrowLeft className="h-4 w-4" /> {effectiveTeamId ? "Back to team" : "Back to timeline"}
       </Link>
 
       <h2 className="font-display text-3xl font-bold mb-6">Log a Dining Memory</h2>
+
+      {effectiveTeamId && (
+        <div className="paper-card mb-6 rounded-md p-4 text-sm" style={{ borderColor: "var(--line)" }}>
+          Logging this visit for team{teamName ? `: ${teamName}` : ""}. It'll show up on the team page instead of your main timeline.
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="paper-card space-y-8 rounded-md p-8">
         <section className="grid grid-cols-2 gap-4">
