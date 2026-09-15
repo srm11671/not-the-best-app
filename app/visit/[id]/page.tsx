@@ -12,7 +12,12 @@ export const revalidate = 0
 export const fetchCache = "force-no-store"
 
 export default async function VisitDetailPage({ params }: { params: { id: string } }) {
-  const visit = await getVisit(params.id)
+  let visit
+  try {
+    visit = await getVisit(params.id)
+  } catch {
+    notFound()
+  }
   if (!visit) notFound()
 
   const stats: { label: string; value: number }[] = [
