@@ -2,9 +2,11 @@
 --
 -- Lets team members and redeemed fans comment on a team's visits.
 
+-- Note: visits.id is text (app-generated via crypto.randomUUID()), not a
+-- native uuid column, so visit_id below matches that type.
 create table if not exists visit_comments (
   id uuid primary key default gen_random_uuid(),
-  visit_id uuid not null references visits(id) on delete cascade,
+  visit_id text not null references visits(id) on delete cascade,
   team_id uuid not null references teams(id) on delete cascade,
   user_id uuid references auth.users(id) on delete cascade,
   display_name text not null,
