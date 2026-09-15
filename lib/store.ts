@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { DiningVisit } from "@/types"
 
-const AUTH_REQUIRED = process.env.REQUIRE_AUTH === "false"
+const AUTH_REQUIRED = process.env.REQUIRE_AUTH === "true"
 
 interface VisitRow {
   id: string
