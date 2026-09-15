@@ -10,7 +10,13 @@ export const dynamic = "force-dynamic"
 export const revalidate = 0
 export const fetchCache = "force-no-store"
 export default async function HomePage() {
-  const visits = await getVisits()
+  let visits: Awaited<ReturnType<typeof getVisits>> = []
+  let loadError = false
+  try {
+    visits = await getVisits()
+  } catch {
+    loadError = true
+  }
 
   const hiddenGems = visits.filter((v) => v.overallRating === "hidden-gem").length
   const totalRestaurants = new Set(visits.map((v) => v.restaurant)).size
@@ -20,42 +26,56 @@ export default async function HomePage() {
       <Masthead />
       <TestingNotice />
       <TrialBanner />
-      
-      <section className="mb-10 grid grid-cols-3 gap-4">
-        <div className="paper-card rounded-md p-4 text-center">
-          <div className="font-display text-3xl font-bold">{visits.length}</div>
-          <div className="text-xs stamp" style={{ color: "var(--ink-soft)" }}>Meals Remembered</div>
-        </div>
-        <div className="paper-card rounded-md p-4 text-center">
-          <div className="font-display text-3xl font-bold">{totalRestaurants}</div>
-          <div className="text-xs stamp" style={{ color: "var(--ink-soft)" }}>Restaurants</div>
-        </div>
-        <div className="paper-card rounded-md p-4 text-center">
-          <div className="font-display text-3xl font-bold">{hiddenGems}</div>
-          <div className="text-xs stamp" style={{ color: "var(--ink-soft)" }}>Hidden Gems Found</div>
-        </div>
-      </section>
 
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="font-display text-2xl font-semibold">Your Dining Timeline</h2>
-        <Link href="/visit/new" className="text-sm underline decoration-dotted underline-offset-4">
-          + Log a new visit
-        </Link>
-      </div>
-
-      {visits.length === 0 ? (
+      {loadError ? (
         <div className="paper-card rounded-md p-10 text-center">
-          <p className="font-display text-xl mb-2">No memories yet.</p>
+          <p className="font-display text-xl mb-2">Sign in to see your timeline.</p>
           <p className="text-sm" style={{ color: "var(--ink-soft)" }}>
-            Log your first visit and start building your personal dining knowledge base.
+            <Link href="/login" className="underline decoration-dotted underline-offset-4">
+              Log in
+            </Link>{" "}
+            to view and log your dining memories.
           </p>
         </div>
       ) : (
-        <div className="space-y-5">
-          {visits.map((visit) => (
-            <VisitCard key={visit.id} visit={visit} />
-          ))}
-        </div>
+        <>
+          <section className="mb-10 grid grid-cols-3 gap-4">
+            <div className="paper-card rounded-md p-4 text-center">
+              <div className="font-display text-3xl font-bold">{visits.length}</div>
+              <div className="text-xs stamp" style={{ color: "var(--ink-soft)" }}>Meals Remembered</div>
+            </div>
+            <div className="paper-card rounded-md p-4 text-center">
+              <div className="font-display text-3xl font-bold">{totalRestaurants}</div>
+              <div className="text-xs stamp" style={{ color: "var(--ink-soft)" }}>Restaurants</div>
+            </div>
+            <div className="paper-card rounded-md p-4 text-center">
+              <div className="font-display text-3xl font-bold">{hiddenGems}</div>
+              <div className="text-xs stamp" style={{ color: "var(--ink-soft)" }}>Hidden Gems Found</div>
+            </div>
+          </section>
+
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="font-display text-2xl font-semibold">Your Dining Timeline</h2>
+            <Link href="/visit/new" className="text-sm underline decoration-dotted underline-offset-4">
+              + Log a new visit
+            </Link>
+          </div>
+
+          {visits.length === 0 ? (
+            <div className="paper-card rounded-md p-10 text-center">
+              <p className="font-display text-xl mb-2">No memories yet.</p>
+              <p className="text-sm" style={{ color: "var(--ink-soft)" }}>
+                Log your first visit and start building your personal dining knowledge base.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              {visits.map((visit) => (
+                <VisitCard key={visit.id} visit={visit} />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       <footer className="mt-16 border-t pt-6 text-xs" style={{ color: "var(--ink-soft)", borderColor: "var(--line)" }}>
