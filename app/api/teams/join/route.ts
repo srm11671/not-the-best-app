@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 
 export const dynamic = "force-dynamic"
 
-const AUTH_REQUIRED = process.env.REQUIRE_AUTH === "false"
+const AUTH_REQUIRED = process.env.REQUIRE_AUTH === "true"
 
 export async function POST(request: Request) {
   try {
