@@ -109,6 +109,7 @@ export interface Team {
   name: string
   slug: string
   inviteCode: string
+  fanCode: string
   visibility: "private" | "public"
   createdBy: string | null
   createdAt: string
@@ -126,4 +127,22 @@ export interface TeamMember {
   experience: string
   isAdmin: boolean
   joinedAt: string
+}
+
+export interface TeamFan {
+  id: string
+  teamId: string
+  userId: string | null
+  displayName: string
+  redeemedAt: string
+}
+
+export interface VisitComment {
+  id: string
+  visitId: string
+  teamId: string
+  userId: string | null
+  displayName: string
+  body: string
+  createdAt: string
 }
