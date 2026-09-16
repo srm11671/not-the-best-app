@@ -2,12 +2,18 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { VisitComment } from "@/types"
 import { format, parseISO } from "date-fns"
 
+interface GenericComment {
+  id: string
+  displayName: string
+  body: string
+  createdAt: string
+}
+
 interface CommentThreadProps {
-  visitId: string
-  comments: VisitComment[]
+  apiPath: string
+  comments: GenericComment[]
   canComment: boolean
   defaultDisplayName?: string
 }
@@ -15,7 +21,7 @@ interface CommentThreadProps {
 const inputClass =
   "w-full rounded border bg-transparent px-3 py-2 text-[15px] focus:outline-none focus:border-[--rust]"
 
-export function CommentThread({ visitId, comments, canComment, defaultDisplayName }: CommentThreadProps) {
+export function CommentThread({ apiPath, comments, canComment, defaultDisplayName }: CommentThreadProps) {
   const router = useRouter()
   const [displayName, setDisplayName] = useState(defaultDisplayName ?? "")
   const [body, setBody] = useState("")
@@ -27,7 +33,7 @@ export function CommentThread({ visitId, comments, canComment, defaultDisplayNam
     setSubmitting(true)
     setError("")
     try {
-      const res = await fetch(`/api/visits/${visitId}/comments`, {
+      const res = await fetch(apiPath, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ displayName, body }),
