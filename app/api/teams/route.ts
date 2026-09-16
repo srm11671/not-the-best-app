@@ -8,7 +8,10 @@ export const fetchCache = "force-no-store"
 export async function GET() {
   try {
     const teams = await getTeams()
-    return NextResponse.json(teams)
+    // Codes must never appear in a list response, even for the owner --
+    // only the single-team detail endpoint ever includes them.
+    const safe = teams.map(({ inviteCode, fanCode, ...rest }) => rest)
+    return NextResponse.json(safe)
   } catch (err) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
@@ -25,6 +28,7 @@ export async function POST(request: Request) {
       )
     }
     const team = await createTeam(name.trim(), displayName.trim(), role.trim())
+    // The creator IS the owner, so returning the full team (with codes) here is correct.
     return NextResponse.json(team, { status: 201 })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unauthorized"
