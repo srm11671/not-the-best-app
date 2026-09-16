@@ -1,12 +1,12 @@
 import { getTeam, getTeamMembers, getTeamFanForUser } from "@/lib/teams-store"
-import { getTeamVisits } from "@/lib/store"
-import { getVisitComments } from "@/lib/comments-store"
+import { getTeamRestaurants } from "@/lib/team-restaurants-store"
+import { getTeamComments } from "@/lib/team-comments-store"
 import { createClient } from "@/lib/supabase/server"
 import { Masthead } from "@/components/masthead"
 import { InviteCodePanel } from "@/components/invite-code-panel"
 import { FanCodePanel } from "@/components/fan-code-panel"
 import { CommentThread } from "@/components/comment-thread"
-import { VisitCard } from "@/components/visit-card"
+import { TeamRestaurantCard } from "@/components/team-restaurant-card"
 import { Lock, Globe, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
@@ -30,8 +30,9 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
   if (!team) notFound()
 
   let isMember = !AUTH_REQUIRED
-  let isAdmin = !AUTH_REQUIRED
+  let isOwner = !AUTH_REQUIRED
   let isFan = !AUTH_REQUIRED
+  let myMemberId: string | undefined
   let memberDisplayName: string | undefined
   let fanDisplayName: string | undefined
 
@@ -43,8 +44,9 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
 
     const myMembership = user ? members.find((m) => m.userId === user.id) : undefined
     isMember = !!myMembership
-    isAdmin = !!myMembership?.isAdmin
+    myMemberId = myMembership?.id
     memberDisplayName = myMembership?.displayName
+    isOwner = !!user && team.createdBy === user.id
 
     if (!isMember && user) {
       const fanRecord = await getTeamFanForUser(team.id, user.id)
@@ -68,11 +70,11 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
         <div className="paper-card rounded-md p-10 text-center">
           <p className="font-display text-xl mb-2">{team.name}</p>
           <p className="text-sm mb-6" style={{ color: "var(--ink-soft)" }}>
-            This team's page is private. Ask a teammate for an invite code, or a fan code to follow along.
+            This team&apos;s page is private. Ask a teammate for a team code, or a fan code to follow along.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link href="/teams/join" className="text-sm underline decoration-dotted underline-offset-4">
-              Join with an invite code
+              Join with a team code
             </Link>
             <Link href="/teams/fan-join" className="text-sm underline decoration-dotted underline-offset-4">
               View with a fan code
@@ -83,22 +85,19 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
     )
   }
 
-  let visits: Awaited<ReturnType<typeof getTeamVisits>> = []
+  let restaurants: Awaited<ReturnType<typeof getTeamRestaurants>> = []
   try {
-    visits = await getTeamVisits(params.id)
+    restaurants = await getTeamRestaurants(params.id)
   } catch {
-    visits = []
+    restaurants = []
   }
 
-  const visitComments = await Promise.all(
-    visits.map(async (visit) => {
-      try {
-        return await getVisitComments(visit.id)
-      } catch {
-        return []
-      }
-    })
-  )
+  let teamComments: Awaited<ReturnType<typeof getTeamComments>> = []
+  try {
+    teamComments = await getTeamComments(team.id)
+  } catch {
+    teamComments = []
+  }
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
@@ -136,20 +135,28 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
             )}
           </div>
         </div>
+        {isFan && (
+          <Link
+            href={`/teams/${team.id}/fan-ratings`}
+            className="text-sm underline decoration-dotted underline-offset-4"
+          >
+            My private ratings
+          </Link>
+        )}
       </div>
 
       <p className="mb-6 text-sm" style={{ color: "var(--ink-soft)" }}>
         Fan-created team page -- not affiliated with or endorsed by any official league, series, or organization.
       </p>
 
-      {isAdmin && (
+      {isOwner && (
         <div className="mb-8 grid gap-4 sm:grid-cols-2">
-          <InviteCodePanel teamId={team.id} inviteCode={team.inviteCode} />
-          <FanCodePanel teamId={team.id} fanCode={team.fanCode} />
+          <InviteCodePanel teamId={team.id} inviteCode={team.inviteCode ?? ""} />
+          <FanCodePanel teamId={team.id} fanCode={team.fanCode ?? ""} />
         </div>
       )}
 
-      {(isMember || isAdmin) && (
+      {(isMember || isOwner) && (
         <>
           <h3 className="mb-4 font-display text-xl font-semibold">Roster</h3>
           {members.length === 0 ? (
@@ -159,7 +166,11 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
           ) : (
             <div className="space-y-3">
               {members.map((member) => (
-                <div key={member.id} className="paper-card flex items-center justify-between gap-4 rounded-md p-4">
+                <Link
+                  key={member.id}
+                  href={`/teams/${team.id}/members/${member.id}`}
+                  className="paper-card flex items-center justify-between gap-4 rounded-md p-4 block hover:-translate-y-0.5 transition-transform"
+                >
                   <div>
                     <div className="font-semibold">
                       {member.displayName}
@@ -174,7 +185,7 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
                       <div className="mt-1 text-sm">{member.experience}</div>
                     )}
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -182,38 +193,45 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
       )}
 
       <div className="mt-10 mb-4 flex items-center justify-between">
-        <h3 className="font-display text-xl font-semibold">Team Visits</h3>
-        {(isMember || isAdmin) && (
+        <h3 className="font-display text-xl font-semibold">Restaurants</h3>
+        {isMember && (
           <Link
-            href={`/visit/new?teamId=${team.id}`}
+            href={`/teams/${team.id}/restaurants/new`}
             className="rounded-full text-[--paper] px-4 py-2 text-sm hover:opacity-90 transition-opacity font-semibold"
             style={{ backgroundColor: "var(--ink)" }}
           >
-            + Log a Visit
+            + Add a Restaurant
           </Link>
         )}
       </div>
-      {visits.length === 0 ? (
+      {restaurants.length === 0 ? (
         <div className="paper-card rounded-md p-8 text-center">
           <p className="text-sm" style={{ color: "var(--ink-soft)" }}>
-            No visits logged for this team yet.
+            No restaurants logged for this team yet.
           </p>
         </div>
       ) : (
-        <div className="space-y-10">
-          {visits.map((visit, i) => (
-            <div key={visit.id}>
-              <VisitCard visit={visit} />
-              <CommentThread
-                visitId={visit.id}
-                comments={visitComments[i]}
-                canComment={canComment}
-                defaultDisplayName={viewerDisplayName}
-              />
-            </div>
+        <div className="space-y-6">
+          {restaurants.map((r) => (
+            <TeamRestaurantCard
+              key={r.id}
+              teamId={team.id}
+              restaurant={r}
+              canRate={isMember}
+              myMemberId={myMemberId}
+            />
           ))}
         </div>
       )}
+
+      <div className="mt-10">
+        <CommentThread
+          apiPath={`/api/teams/${team.id}/comments`}
+          comments={teamComments}
+          canComment={canComment}
+          defaultDisplayName={viewerDisplayName}
+        />
+      </div>
     </div>
   )
 }
