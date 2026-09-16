@@ -108,14 +108,17 @@ export interface Team {
   id: string
   name: string
   slug: string
-  inviteCode: string
-  fanCode: string
+  // Only ever populated for the team owner. Everyone else gets undefined --
+  // codes must never be visible on any public/list response.
+  inviteCode?: string
+  fanCode?: string
   visibility: "private" | "public"
   createdBy: string | null
   createdAt: string
   memberCount?: number
   isMember?: boolean
   isAdmin?: boolean
+  isOwner?: boolean
 }
 
 export interface TeamMember {
@@ -144,5 +147,58 @@ export interface VisitComment {
   userId: string | null
   displayName: string
   body: string
+  createdAt: string
+}
+
+// A restaurant the team has visited -- created once by whichever member
+// logs it first. Other members add their OWN rating to this same entry
+// instead of creating a duplicate restaurant row.
+export interface TeamRestaurant {
+  id: string
+  teamId: string
+  restaurant: string
+  location: string
+  addedByMemberId: string | null
+  createdAt: string
+  ratings: TeamRestaurantRating[]
+}
+
+// One team member's individual rating of a shared team restaurant.
+export interface TeamRestaurantRating {
+  id: string
+  teamRestaurantId: string
+  teamId: string
+  memberId: string
+  memberDisplayName?: string
+  rating: NTBRating
+  summary: string
+  notes: string
+  foodItems: FoodItem[]
+  createdAt: string
+  updatedAt: string
+}
+
+// A comment on the team itself, or on a specific member's profile.
+export interface TeamComment {
+  id: string
+  teamId: string
+  targetType: "team" | "member"
+  targetMemberId: string | null
+  userId: string | null
+  displayName: string
+  body: string
+  createdAt: string
+}
+
+// A fan's private rating of a restaurant -- never shared with the team.
+export interface FanPrivateRating {
+  id: string
+  teamId: string
+  fanId: string
+  userId: string | null
+  restaurant: string
+  location: string
+  rating: NTBRating
+  notes: string
   createdAt: string
 }
