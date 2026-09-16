@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { regenerateFanCode, getTeamMembers } from "@/lib/teams-store"
+import { regenerateFanCode, getTeam } from "@/lib/teams-store"
 import { createClient } from "@/lib/supabase/server"
 
 export const dynamic = "force-dynamic"
@@ -14,9 +14,10 @@ export async function POST(request: Request, { params }: { params: { id: string 
         data: { user },
       } = await supabase.auth.getUser()
       if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-      const members = await getTeamMembers(params.id)
-      const isAdmin = members.some((m) => m.userId === user.id && m.isAdmin)
-      if (!isAdmin) return NextResponse.json({ error: "Admins only" }, { status: 403 })
+      const team = await getTeam(params.id)
+      if (!team || team.createdBy !== user.id) {
+        return NextResponse.json({ error: "Only the team owner can do this" }, { status: 403 })
+      }
     }
     const team = await regenerateFanCode(params.id)
     if (!team) return NextResponse.json({ error: "Not found" }, { status: 404 })
