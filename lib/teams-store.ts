@@ -83,7 +83,7 @@ function slugify(name: string): string {
 
 function generateCode(): string {
   // Short, human-typeable code -- uppercase letters + digits, no ambiguous chars.
-  // Used for both invite codes (members) and fan codes (read-only viewers).
+  // Used for both team codes (members) and fan codes (read-only viewers).
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
   let code = ""
   for (let i = 0; i < 8; i++) {
@@ -104,7 +104,9 @@ async function getClientAndUser() {
   return { supabase, user }
 }
 
-// Teams you belong to, plus every public team (for browsing).
+// Teams you belong to, plus every public team (for browsing). Codes are
+// stripped by the API layer before this ever reaches a non-owner --
+// this function itself always returns the raw row.
 export async function getTeams(): Promise<Team[]> {
   const { supabase } = await getClientAndUser()
   const { data, error } = await supabase
@@ -113,6 +115,39 @@ export async function getTeams(): Promise<Team[]> {
     .order("created_at", { ascending: false })
   if (error) throw new Error(error.message)
   return (data as TeamRow[]).map(rowToTeam)
+}
+
+// Public, homepage-safe team summary. Deliberately its own query (not a
+// filtered version of getTeams()) so the "Mo's Not The Best Teams" section
+// on the main page never touches invite/fan codes, rosters, or ratings --
+// it only ever selects name + visibility + a member count.
+export async function getPublicTeamsSummary(): Promise<
+  { id: string; name: string; visibility: "private" | "public"; memberCount: number }[]
+> {
+  const admin = createAdminClient()
+  const { data: teams, error } = await admin
+    .from("teams")
+    .select("id, name, visibility")
+    .eq("visibility", "public")
+    .order("created_at", { ascending: false })
+    .limit(50)
+  if (error) throw new Error(error.message)
+
+  const ids = (teams ?? []).map((t) => t.id)
+  if (ids.length === 0) return []
+
+  const { data: members } = await admin.from("team_members").select("team_id").in("team_id", ids)
+  const counts = new Map<string, number>()
+  for (const m of members ?? []) {
+    counts.set(m.team_id, (counts.get(m.team_id) ?? 0) + 1)
+  }
+
+  return (teams ?? []).map((t) => ({
+    id: t.id,
+    name: t.name,
+    visibility: t.visibility,
+    memberCount: counts.get(t.id) ?? 0,
+  }))
 }
 
 export async function getTeam(id: string): Promise<Team | undefined> {
@@ -131,6 +166,18 @@ export async function getTeamMembers(teamId: string): Promise<TeamMember[]> {
     .order("joined_at", { ascending: true })
   if (error) throw new Error(error.message)
   return (data as TeamMemberRow[]).map(rowToMember)
+}
+
+export async function getTeamMember(teamId: string, memberId: string): Promise<TeamMember | undefined> {
+  const { supabase } = await getClientAndUser()
+  const { data, error } = await supabase
+    .from("team_members")
+    .select("*")
+    .eq("team_id", teamId)
+    .eq("id", memberId)
+    .maybeSingle()
+  if (error) throw new Error(error.message)
+  return data ? rowToMember(data as TeamMemberRow) : undefined
 }
 
 // Fans who've redeemed this team's fan code. Admin-only view (see the
@@ -161,7 +208,8 @@ export async function getTeamFanForUser(teamId: string, userId: string): Promise
   return data ? rowToFan(data as TeamFanRow) : undefined
 }
 
-// Creates the team, then adds the creator as its first admin member.
+// Creates the team, then adds the creator as its first admin member (and
+// owner -- created_by is the only user who will ever see this team's codes).
 // Not wrapped in a DB transaction (Supabase JS doesn't expose one directly),
 // so if the second insert fails we clean up the orphaned team row.
 export async function createTeam(
@@ -251,7 +299,7 @@ export async function deleteTeam(id: string): Promise<boolean> {
 }
 
 // Join-by-code always goes through the service-role client, after
-// validating the code ourselves -- this keeps invite codes from being
+// validating the code ourselves -- this keeps team codes from being
 // guessable via RLS-select timing/behavior, matching the same trust
 // boundary the Stripe webhook uses elsewhere in this app.
 export async function joinTeamByCode(
@@ -269,7 +317,7 @@ export async function joinTeamByCode(
     .eq("invite_code", code.trim().toUpperCase())
     .maybeSingle()
   if (teamError) throw new Error(teamError.message)
-  if (!team) throw new Error("Invalid invite code")
+  if (!team) throw new Error("Invalid team code")
 
   const memberRow = {
     team_id: team.id,
@@ -297,8 +345,8 @@ export async function joinTeamByCode(
 
 // Same trust boundary as joinTeamByCode -- the fan code is validated
 // server-side with the service-role client, never exposed to RLS-select
-// guessing. Fans get read-only viewing of the team's visits plus
-// commenting, but never a roster row or edit rights.
+// guessing. Fans get read-only viewing of the team's restaurant catalog
+// plus commenting, but never a roster row or edit rights.
 export async function joinTeamAsFan(
   code: string,
   displayName: string,
