@@ -3,6 +3,7 @@ import { Masthead } from "@/components/masthead"
 import { VisitCard } from "@/components/visit-card"
 import { TrialBanner } from "@/components/trial-banner"
 import { TestingNotice } from "@/components/testing-notice"
+import { TeamsSection } from "@/components/teams-section"
 import { NTB_TIERS } from "@/types"
 import Link from "next/link"
 
@@ -77,6 +78,8 @@ export default async function HomePage() {
           )}
         </>
       )}
+
+      <TeamsSection />
 
       <footer className="mt-16 border-t pt-6 text-xs" style={{ color: "var(--ink-soft)", borderColor: "var(--line)" }}>
         <p className="italic">
