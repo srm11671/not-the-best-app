@@ -23,8 +23,8 @@ export default async function TeamsPage() {
       <div className="mb-2">
         <h2 className="font-display text-2xl font-semibold">Racing Teams</h2>
         <p className="mt-1 text-sm" style={{ color: "var(--ink-soft)" }}>
-          Fan-created drag racing team pages. Not affiliated with or endorsed by any official league,
-          series, or organization.
+          Create a team, share a private team code with your teammates, and a separate fan code so fans can
+          follow along and comment.
         </p>
       </div>
 
@@ -33,7 +33,7 @@ export default async function TeamsPage() {
           + Create a team
         </Link>
         <Link href="/teams/join" className="text-sm underline decoration-dotted underline-offset-4">
-          Join with an invite code
+          Join with a team code
         </Link>
       </div>
 
@@ -51,7 +51,7 @@ export default async function TeamsPage() {
         <div className="paper-card rounded-md p-10 text-center">
           <p className="font-display text-xl mb-2">No teams yet.</p>
           <p className="text-sm" style={{ color: "var(--ink-soft)" }}>
-            Create a team, or join one with an invite code from a teammate.
+            Create a team, or join one with a team code from a teammate.
           </p>
         </div>
       ) : (
