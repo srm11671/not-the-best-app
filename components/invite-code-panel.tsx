@@ -33,7 +33,7 @@ export function InviteCodePanel({ teamId, inviteCode }: InviteCodePanelProps) {
   return (
     <div className="paper-card rounded-md p-4">
       <div className="text-xs stamp mb-2" style={{ color: "var(--ink-soft)" }}>
-        Invite code (admins only)
+        Team code (owner only — share with teammates to join)
       </div>
       <div className="flex items-center gap-2">
         <code className="rounded border px-3 py-2 text-lg font-semibold tracking-widest" style={{ borderColor: "var(--line)" }}>
@@ -44,7 +44,7 @@ export function InviteCodePanel({ teamId, inviteCode }: InviteCodePanelProps) {
           onClick={handleCopy}
           className="rounded border px-2 py-2 hover:text-[--rust] transition-colors"
           style={{ borderColor: "var(--line)" }}
-          aria-label="Copy invite code"
+          aria-label="Copy team code"
         >
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </button>
@@ -54,7 +54,7 @@ export function InviteCodePanel({ teamId, inviteCode }: InviteCodePanelProps) {
           disabled={regenerating}
           className="rounded border px-2 py-2 hover:text-[--rust] transition-colors disabled:opacity-50"
           style={{ borderColor: "var(--line)" }}
-          aria-label="Regenerate invite code"
+          aria-label="Regenerate team code"
         >
           <RefreshCw className={`h-4 w-4 ${regenerating ? "animate-spin" : ""}`} />
         </button>
