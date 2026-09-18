@@ -52,7 +52,7 @@ export function JoinTeamForm() {
       <form onSubmit={handleSubmit} className="paper-card space-y-6 rounded-md p-8">
         <h2 className="font-display text-2xl font-semibold">Join a Racing Team</h2>
         <p className="text-sm" style={{ color: "var(--ink-soft)" }}>
-          Ask a teammate for the invite code.
+          Ask a teammate for the team code.
         </p>
 
         {error && (
@@ -62,7 +62,7 @@ export function JoinTeamForm() {
         )}
 
         <div>
-          <label className={labelClass}>Invite code</label>
+          <label className={labelClass}>Team code</label>
           <input
             required
             className={inputClass}
