@@ -70,7 +70,7 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
         <div className="paper-card rounded-md p-10 text-center">
           <p className="font-display text-xl mb-2">{team.name}</p>
           <p className="text-sm mb-6" style={{ color: "var(--ink-soft)" }}>
-            This team&apos;s page is private. Ask a teammate for a team code, or a fan code to follow along.
+            This team's page is private. Ask a teammate for a team code, or a fan code to follow along.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link href="/teams/join" className="text-sm underline decoration-dotted underline-offset-4">
@@ -145,9 +145,11 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
         )}
       </div>
 
-      <p className="mb-6 text-sm" style={{ color: "var(--ink-soft)" }}>
-        Fan-created team page -- not affiliated with or endorsed by any official league, series, or organization.
-      </p>
+      {isOwner && (
+        <p className="mb-6 text-sm" style={{ color: "var(--ink-soft)" }}>
+          Only you can see and share this team's codes below — they're never shown anywhere public.
+        </p>
+      )}
 
       {isOwner && (
         <div className="mb-8 grid gap-4 sm:grid-cols-2">
