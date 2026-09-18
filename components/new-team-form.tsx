@@ -51,7 +51,8 @@ export function NewTeamForm() {
       <form onSubmit={handleSubmit} className="paper-card space-y-6 rounded-md p-8">
         <h2 className="font-display text-2xl font-semibold">Create a Racing Team</h2>
         <p className="text-sm" style={{ color: "var(--ink-soft)" }}>
-          Fan-created team page -- not affiliated with or endorsed by any official league, series, or organization.
+          You'll get a private team code to send teammates, and a separate fan code you can share publicly so fans
+          can follow along and comment. Only you, as the team owner, will be able to see and share these codes.
         </p>
 
         {error && (
