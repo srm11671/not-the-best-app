@@ -3,7 +3,11 @@ import { LogoMark } from "@/components/logo-mark"
 import { LogoutButton } from "@/components/logout-button"
 import { createClient } from "@/lib/supabase/server"
 
-export async function Masthead() {
+// The private dining timeline and the Teams area are meant to stay visually
+// separate. Pages on the private side (Timeline, NTB Rating, Log/Edit a Visit)
+// pass showTeamsLink={false} so "Teams" never appears in their nav -- Teams
+// only shows up once you're actually inside the Teams area.
+export async function Masthead({ showTeamsLink = true }: { showTeamsLink?: boolean } = {}) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -25,9 +29,11 @@ export async function Masthead() {
           <Link href="/rating" className="hover:text-[--rust] transition-colors">
             NTB Rating™
           </Link>
-          <Link href="/teams" className="hover:text-[--rust] transition-colors">
-            Teams
-          </Link>
+          {showTeamsLink && (
+            <Link href="/teams" className="hover:text-[--rust] transition-colors">
+              Teams
+            </Link>
+          )}
           <Link
             href="/visit/new"
             className="rounded-full text-[--paper] px-4 py-2 hover:opacity-90 transition-opacity normal-case font-semibold not-italic"
