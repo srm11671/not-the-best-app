@@ -59,6 +59,11 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
   const canView = isMember || isFan || isPublic
   const canComment = isMember || isFan || isPublic
   const viewerDisplayName = memberDisplayName ?? fanDisplayName
+  // A viewer only ever gets ONE role at a time: owners/members manage the team
+  // and never see fan-only affordances, even while REQUIRE_AUTH is off and
+  // every flag defaults to true. Fan-only UI (the private-ratings link, the
+  // "Fan view" badge) must always check `!isMember` first.
+  const isFanOnly = isFan && !isMember
 
   if (!canView) {
     return (
@@ -125,7 +130,7 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
                 </>
               )}
             </span>
-            {!isMember && isFan && (
+            {isFanOnly && (
               <span
                 className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs"
                 style={{ borderColor: "var(--line)", color: "var(--ink-soft)" }}
@@ -135,7 +140,7 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
             )}
           </div>
         </div>
-        {isFan && (
+        {isFanOnly && (
           <Link
             href={`/teams/${team.id}/fan-ratings`}
             className="text-sm underline decoration-dotted underline-offset-4"
@@ -177,16 +182,16 @@ export default async function TeamDetailPage({ params }: { params: { id: string 
                     <div className="font-semibold">
                       {member.displayName}
                       {member.isAdmin && (
-                        <span className="ml-2 rounded-full border px-2 py-0.5 text-xs stamp" style={{ borderColor: "var(--line)", color: "var(--ink-soft)" }}>
-                          Admin
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-sm" style={{ color: "var(--ink-soft)" }}>{member.role}</div>
-                    {member.experience && (
-                      <div className="mt-1 text-sm">{member.experience}</div>
+                      <span className="ml-2 rounded-full border px-2 py-0.5 text-xs stamp" style={{ borderColor: "var(--line)", color: "var(--ink-soft)" }}>
+                        Admin
+                      </span>
                     )}
                   </div>
+                  <div className="text-sm" style={{ color: "var(--ink-soft)" }}>{member.role}</div>
+                  {member.experience && (
+                    <div className="mt-1 text-sm">{member.experience}</div>
+                  )}
+                </div>
                 </Link>
               ))}
             </div>
