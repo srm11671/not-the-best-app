@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
-import { TeamRestaurant, TeamRestaurantRating, FoodItem, NTBRating } from "@/types"
+import { TeamRestaurant, TeamRestaurantRating, FoodItem, ConsideredItem, NTBRating } from "@/types"
 
 const AUTH_REQUIRED = process.env.REQUIRE_AUTH === "true"
 
@@ -22,9 +22,51 @@ interface RatingRow {
   summary: string | null
   notes: string | null
   food_items: FoodItem[]
+  visit_date: string | null
+  occasion: string | null
+  companions: string[] | null
+  service_notes: string[] | null
+  items_considered: ConsideredItem[] | null
+  want_to_try_next_time: string[] | null
+  total_spent: number | null
+  price_per_person: number | null
+  wait_time_minutes: number | null
+  atmosphere: number | null
+  cleanliness: number | null
+  overall_value: number | null
+  photos: number | null
+  critic_name: string | null
+  critic_rating: number | null
+  critic_review_url: string | null
   created_at: string
   updated_at: string
   team_members?: { display_name: string } | null
+}
+
+// Every field a team member's rating can capture -- the exact same shape as
+// the personal "Log a Dining Memory" form (DiningVisit), so logging a team
+// visit is the same experience as logging a personal one.
+export interface RatingInput {
+  rating: NTBRating
+  summary: string
+  notes: string
+  foodItems: FoodItem[]
+  date: string
+  occasion: string
+  companions: string[]
+  serviceNotes: string[]
+  itemsConsidered: ConsideredItem[]
+  wantToTryNextTime: string[]
+  totalSpent: number
+  pricePerPerson: number
+  waitTimeMinutes: number
+  atmosphere: number
+  cleanliness: number
+  overallValue: number
+  photos: number
+  criticName?: string
+  criticRating?: number
+  criticReviewUrl?: string
 }
 
 function rowToRating(row: RatingRow): TeamRestaurantRating {
@@ -38,6 +80,22 @@ function rowToRating(row: RatingRow): TeamRestaurantRating {
     summary: row.summary ?? "",
     notes: row.notes ?? "",
     foodItems: row.food_items ?? [],
+    date: row.visit_date ?? "",
+    occasion: row.occasion ?? "",
+    companions: row.companions ?? [],
+    serviceNotes: row.service_notes ?? [],
+    itemsConsidered: row.items_considered ?? [],
+    wantToTryNextTime: row.want_to_try_next_time ?? [],
+    totalSpent: row.total_spent ?? 0,
+    pricePerPerson: row.price_per_person ?? 0,
+    waitTimeMinutes: row.wait_time_minutes ?? 0,
+    atmosphere: row.atmosphere ?? 7,
+    cleanliness: row.cleanliness ?? 7,
+    overallValue: row.overall_value ?? 7,
+    photos: row.photos ?? 0,
+    criticName: row.critic_name ?? undefined,
+    criticRating: row.critic_rating ?? undefined,
+    criticReviewUrl: row.critic_review_url ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
@@ -107,10 +165,7 @@ export async function addTeamRestaurant(
   memberId: string,
   restaurant: string,
   location: string,
-  rating: NTBRating,
-  summary: string,
-  notes: string,
-  foodItems: FoodItem[]
+  input: RatingInput
 ): Promise<TeamRestaurant> {
   const { supabase } = await getClientAndUser()
 
@@ -133,7 +188,7 @@ export async function addTeamRestaurant(
     restaurantRow = data as RestaurantRow
   }
 
-  await addOrUpdateRating(teamId, restaurantRow.id, memberId, rating, summary, notes, foodItems)
+  await addOrUpdateRating(teamId, restaurantRow.id, memberId, input)
 
   const full = await getTeamRestaurant(teamId, restaurantRow.id)
   if (!full) throw new Error("Failed to load restaurant after creation")
@@ -141,25 +196,38 @@ export async function addTeamRestaurant(
 }
 
 // Adds (or updates, if this member already rated this restaurant) one
-// member's rating on an existing shared team restaurant.
+// member's full rating on an existing shared team restaurant.
 export async function addOrUpdateRating(
   teamId: string,
   teamRestaurantId: string,
   memberId: string,
-  rating: NTBRating,
-  summary: string,
-  notes: string,
-  foodItems: FoodItem[]
+  input: RatingInput
 ): Promise<TeamRestaurantRating> {
   const { supabase } = await getClientAndUser()
   const row = {
     team_restaurant_id: teamRestaurantId,
     team_id: teamId,
     member_id: memberId,
-    rating,
-    summary,
-    notes,
-    food_items: foodItems,
+    rating: input.rating,
+    summary: input.summary,
+    notes: input.notes,
+    food_items: input.foodItems,
+    visit_date: input.date || null,
+    occasion: input.occasion,
+    companions: input.companions,
+    service_notes: input.serviceNotes,
+    items_considered: input.itemsConsidered,
+    want_to_try_next_time: input.wantToTryNextTime,
+    total_spent: input.totalSpent,
+    price_per_person: input.pricePerPerson,
+    wait_time_minutes: input.waitTimeMinutes,
+    atmosphere: input.atmosphere,
+    cleanliness: input.cleanliness,
+    overall_value: input.overallValue,
+    photos: input.photos,
+    critic_name: input.criticName ?? null,
+    critic_rating: input.criticRating ?? null,
+    critic_review_url: input.criticReviewUrl ?? null,
     updated_at: new Date().toISOString(),
   }
   const { data, error } = await supabase
