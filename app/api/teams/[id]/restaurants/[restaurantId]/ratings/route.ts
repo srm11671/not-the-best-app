@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { addOrUpdateRating } from "@/lib/team-restaurants-store"
+import { addOrUpdateRating, RatingInput } from "@/lib/team-restaurants-store"
 import { getTeamMembers } from "@/lib/teams-store"
 import { createClient } from "@/lib/supabase/server"
 
@@ -13,7 +13,7 @@ export async function POST(
 ) {
   try {
     const body = await request.json()
-    const { rating, summary, notes, foodItems } = body
+    const { rating } = body
     if (!rating) {
       return NextResponse.json({ error: "A rating is required" }, { status: 400 })
     }
@@ -39,15 +39,30 @@ export async function POST(
       memberId = members[0].id
     }
 
-    const result = await addOrUpdateRating(
-      params.id,
-      params.restaurantId,
-      memberId,
+    const input: RatingInput = {
       rating,
-      summary ?? "",
-      notes ?? "",
-      foodItems ?? []
-    )
+      summary: body.summary ?? "",
+      notes: body.notes ?? "",
+      foodItems: body.foodItems ?? [],
+      date: body.date ?? "",
+      occasion: body.occasion ?? "",
+      companions: body.companions ?? [],
+      serviceNotes: body.serviceNotes ?? [],
+      itemsConsidered: body.itemsConsidered ?? [],
+      wantToTryNextTime: body.wantToTryNextTime ?? [],
+      totalSpent: Number(body.totalSpent) || 0,
+      pricePerPerson: Number(body.pricePerPerson) || 0,
+      waitTimeMinutes: Number(body.waitTimeMinutes) || 0,
+      atmosphere: Number(body.atmosphere) || 7,
+      cleanliness: Number(body.cleanliness) || 7,
+      overallValue: Number(body.overallValue) || 7,
+      photos: Number(body.photos) || 0,
+      criticName: body.criticName || undefined,
+      criticRating: body.criticRating != null ? Number(body.criticRating) : undefined,
+      criticReviewUrl: body.criticReviewUrl || undefined,
+    }
+
+    const result = await addOrUpdateRating(params.id, params.restaurantId, memberId, input)
     return NextResponse.json(result, { status: 201 })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Something went wrong"
