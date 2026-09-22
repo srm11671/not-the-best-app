@@ -28,7 +28,7 @@ export default async function VisitDetailPage({ params }: { params: { id: string
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
-      <Masthead />
+      <Masthead showTeamsLink={false} />
 
       <div className="mb-6 flex items-center justify-between">
         <Link href="/" className="inline-flex items-center gap-1 text-sm hover:text-[--rust]">
