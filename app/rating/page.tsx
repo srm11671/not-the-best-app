@@ -6,9 +6,9 @@ export const dynamic = "force-dynamic"
 export default function RatingPage() {
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
-      <Masthead />
+      <Masthead showTeamsLink={false} />
 
-      <h2 className="font-display text-3xl font-bold mb-2">The NTB Rating™</h2>
+      <h2 className="font-display text-3xl font-bold mb-2">The NTB Rating¢</h2>
       <p className="mb-8 italic text-lg" style={{ color: "var(--ink-soft)" }}>
         People won&rsquo;t ask &ldquo;How many stars?&rdquo; They&rsquo;ll ask &ldquo;What&rsquo;s the NTB Rating?&rdquo;
       </p>
@@ -34,7 +34,7 @@ export default function RatingPage() {
       </div>
 
       <p className="mt-10 text-sm leading-relaxed">
-        The NTB Rating™ replaces traditional stars. NOT THE BEST® is built around a memorable proprietary
+        The NTB Rating¢ replaces traditional stars. NOT THE BEST® is built around a memorable proprietary
         rating system using the NTB icon instead of stars — because a personal memory of a meal deserves
         more nuance than five identical stars.
       </p>
