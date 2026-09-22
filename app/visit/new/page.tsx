@@ -15,7 +15,7 @@ export default async function NewVisitPage({
   return (
     <>
       <div className="mx-auto max-w-3xl px-6 pt-10">
-        <Masthead />
+        <Masthead showTeamsLink={false} />
       </div>
       <NewVisitForm teamId={team?.id} teamName={team?.name} />
     </>
