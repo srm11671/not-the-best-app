@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getTeamRestaurants, addTeamRestaurant } from "@/lib/team-restaurants-store"
+import { getTeamRestaurants, addTeamRestaurant, RatingInput } from "@/lib/team-restaurants-store"
 import { getTeamMembers } from "@/lib/teams-store"
 import { createClient } from "@/lib/supabase/server"
 
@@ -21,7 +21,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
 export async function POST(request: Request, { params }: { params: { id: string } }) {
   try {
     const body = await request.json()
-    const { restaurant, location, rating, summary, notes, foodItems } = body
+    const { restaurant, location, rating } = body
     if (!restaurant?.trim() || !rating) {
       return NextResponse.json({ error: "Restaurant name and a rating are required" }, { status: 400 })
     }
@@ -47,15 +47,35 @@ export async function POST(request: Request, { params }: { params: { id: string 
       memberId = members[0].id
     }
 
+    const input: RatingInput = {
+      rating,
+      summary: body.summary ?? "",
+      notes: body.notes ?? "",
+      foodItems: body.foodItems ?? [],
+      date: body.date ?? "",
+      occasion: body.occasion ?? "",
+      companions: body.companions ?? [],
+      serviceNotes: body.serviceNotes ?? [],
+      itemsConsidered: body.itemsConsidered ?? [],
+      wantToTryNextTime: body.wantToTryNextTime ?? [],
+      totalSpent: Number(body.totalSpent) || 0,
+      pricePerPerson: Number(body.pricePerPerson) || 0,
+      waitTimeMinutes: Number(body.waitTimeMinutes) || 0,
+      atmosphere: Number(body.atmosphere) || 7,
+      cleanliness: Number(body.cleanliness) || 7,
+      overallValue: Number(body.overallValue) || 7,
+      photos: Number(body.photos) || 0,
+      criticName: body.criticName || undefined,
+      criticRating: body.criticRating != null ? Number(body.criticRating) : undefined,
+      criticReviewUrl: body.criticReviewUrl || undefined,
+    }
+
     const result = await addTeamRestaurant(
       params.id,
       memberId,
       restaurant.trim(),
       (location ?? "").trim(),
-      rating,
-      summary ?? "",
-      notes ?? "",
-      foodItems ?? []
+      input
     )
     return NextResponse.json(result, { status: 201 })
   } catch (err) {
