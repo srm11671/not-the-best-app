@@ -13,7 +13,7 @@ export default async function EditVisitPage({ params }: { params: { id: string }
   return (
     <>
       <div className="mx-auto max-w-3xl px-6 pt-10">
-        <Masthead />
+        <Masthead showTeamsLink={false} />
       </div>
       <NewVisitForm visitId={visit.id} initialData={visit} />
     </>
