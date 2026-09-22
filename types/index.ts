@@ -163,7 +163,9 @@ export interface TeamRestaurant {
   ratings: TeamRestaurantRating[]
 }
 
-// One team member's individual rating of a shared team restaurant.
+// One team member's individual rating of a shared team restaurant --
+// captures the exact same fields as a personal DiningVisit so logging
+// a team visit is the same experience as logging a personal one.
 export interface TeamRestaurantRating {
   id: string
   teamRestaurantId: string
@@ -174,6 +176,22 @@ export interface TeamRestaurantRating {
   summary: string
   notes: string
   foodItems: FoodItem[]
+  date: string
+  occasion: string
+  companions: string[]
+  serviceNotes: string[]
+  itemsConsidered: ConsideredItem[]
+  wantToTryNextTime: string[]
+  totalSpent: number
+  pricePerPerson: number
+  waitTimeMinutes: number
+  atmosphere: number
+  cleanliness: number
+  overallValue: number
+  photos: number
+  criticName?: string
+  criticRating?: number
+  criticReviewUrl?: string
   createdAt: string
   updatedAt: string
 }
